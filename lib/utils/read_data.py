@@ -6,9 +6,9 @@ import lib
 __all__ = ["get_trange", "get_num_intervals", "read_dataset"]
 
 
-def get_trange(probe, interval):
+def get_trange(probe, interval, dtype=str):
     with h5.File(lib.data_file, "r") as h5f:
-        trange = h5f[f"/mms{probe}/interval_{interval}/trange"][:].astype(str)
+        trange = h5f[f"/mms{probe}/interval_{interval}/trange"][:].astype("datetime64[ns]").astype(dtype)
 
     return trange
 

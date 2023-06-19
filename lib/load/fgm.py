@@ -1,15 +1,14 @@
+__all__ = ["load_fgm"]
+
 from pyspedas.mms import mms_load_fgm, mms_config
-from lib.utils import get_trange, interpol
-from tempfile import TemporaryDirectory
+from lib.utils import get_trange, TempDir
 from pytplot import get_data, del_data
 import astropy.constants as c
 import astropy.units as u
+import tvolib as tv
 import numpy as np
 import h5py as h5
 import lib
-import os
-
-__all__ = ["load_fgm"]
 
 
 def load_fgm(probe, interval, drate="srvy", wipe=True):
@@ -19,7 +18,7 @@ def load_fgm(probe, interval, drate="srvy", wipe=True):
     suffix = f"{drate}_l2"
 
     # Load FGM data
-    with TemporaryDirectory(dir=lib.tmp_dir) as tmp_dir:
+    with TempDir() as tmp_dir:
         mms_config.CONFIG["local_data_dir"] = tmp_dir
         mms_load_fgm(
             trange=trange,
@@ -32,17 +31,14 @@ def load_fgm(probe, interval, drate="srvy", wipe=True):
         )
 
     # Unpack data
-    B_data = get_data(f"{prefix}_b_gsm_{suffix}", xarray=True)
-    R_data = get_data(f"{prefix}_r_gsm_{suffix}", xarray=True)
-
-    t = B_data.time.values.astype("datetime64[ns]")
-    B = B_data.values * u.Unit(B_dat.CDF["VATT"]["UNITS"])
-    R = interpol(R_data.values, R_data.time.values.astype("f8"), t.astype("f8")) * u.Unit(R_data.CDF["VATT"]["UNITS"])
+    t, B = tv.utils.get_data(f"{prefix}_b_gsm_{suffix}")
+    _t, R = tv.utils.get_data(f"{prefix}_r_gsm_{suffix}")
+    R = tv.numeric.interpol(R, _t, t)
 
     if wipe:
         del_data()
 
-    return dict(t=t.astype("S29"), B=B[:, :3], R=R[:, :3])
+    return dict(t=t.astype("f8"), B=B[:, :3], R=R[:, :3])
 
 
 if __name__ == "__main__":
