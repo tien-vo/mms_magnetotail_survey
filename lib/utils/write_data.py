@@ -1,6 +1,7 @@
 __all__ = ["write_dataset", "TempDir"]
 
 import astropy.units as u
+import numpy as np
 import h5py as h5
 import subprocess
 import contextlib
@@ -10,18 +11,20 @@ import lib
 import os
 
 
-def write_dataset(probe, interval, where, data):
-    fname = f"{lib.data_dir}/h5/mms{probe}/interval_{interval}.h5"
+def write_dataset(probe, interval, instrument, data, where=None):
+    fname = f"{lib.h5_dir}/mms{probe}/{instrument}/interval_{interval}.h5"
     with h5.File(fname, "a") as h5f:
-        for key, value in data.items():
-            if (write_where := f"{where}/{key}") in h5f:
-                del h5f[write_where]
-
-            if isinstance(value, u.Quantity):
-                h5d = h5f.create_dataset(write_where, data=value.value)
-                h5d.attrs["unit"] = str(value.unit)
+        if isinstance(data, dict):
+            for key, value in data.items():
+                write_dataset(probe, interval, instrument, value, where=key)
+        elif isinstance(data, np.ndarray):
+            if where in h5f:
+                del h5f[where]
+            if isinstance(data, u.Quantity):
+                h5d = h5f.create_dataset(where, data=data.value)
+                h5d.attrs["unit"] = str(data.unit)
             else:
-                h5f.create_dataset(write_where, data=value)
+                h5f.create_dataset(where, data=data)
 
 
 @contextlib.contextmanager
@@ -34,8 +37,8 @@ def TempDir():
     yield tmp_dir
 
     # Clean up with subprocess
-    blank = f"{lib.tmp_dir}/{''.join(random.choices(string.ascii_uppercase, k=10))}"
-    os.makedirs(blank, exist_ok=True)
-    subprocess.run(["rsync", "-a", "--delete", f"{blank}/", f"{tmp_dir}/"], check=True)
-    subprocess.run(["rm", "-rf", tmp_dir], check=True)
-    subprocess.run(["rm", "-rf", blank], check=True)
+    os.system(f"rm -rf {tmp_dir}")
+    #subprocess.run(["rm", "-rf", tmp_dir], check=True, shell=True)
+    #blank = f"{lib.tmp_dir}/{''.join(random.choices(string.ascii_uppercase, k=10))}"
+    #os.makedirs(blank, exist_ok=True)
+    #subprocess.run(["rm", "-rf", blank], check=True, shell=True)
