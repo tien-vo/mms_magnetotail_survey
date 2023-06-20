@@ -3,7 +3,6 @@ __all__ = ["write_dataset", "TempDir"]
 import astropy.units as u
 import numpy as np
 import h5py as h5
-import subprocess
 import contextlib
 import random
 import string
@@ -31,14 +30,14 @@ def write_dataset(probe, interval, instrument, data, where=None):
 def TempDir():
 
     # Create temporary directory with random string ID
-    tmp_dir = f"{lib.tmp_dir}/{''.join(random.choices(string.ascii_uppercase, k=10))}"
-    os.makedirs(tmp_dir, exist_ok=True)
+    tmp = f"{lib.tmp_dir}/{''.join(random.choices(string.ascii_uppercase, k=10))}"
+    os.makedirs(tmp, exist_ok=True)
 
-    yield tmp_dir
+    yield tmp
 
     # Clean up with subprocess
-    os.system(f"rm -rf {tmp_dir}")
-    #subprocess.run(["rm", "-rf", tmp_dir], check=True, shell=True)
-    #blank = f"{lib.tmp_dir}/{''.join(random.choices(string.ascii_uppercase, k=10))}"
-    #os.makedirs(blank, exist_ok=True)
-    #subprocess.run(["rm", "-rf", blank], check=True, shell=True)
+    blank = f"{lib.tmp_dir}/{''.join(random.choices(string.ascii_uppercase, k=10))}"
+    os.makedirs(blank, exist_ok=True)
+    os.system(f"rsync -a --delete {blank}/ {tmp}/")
+    os.system(f"rm -rf {tmp}")
+    os.system(f"rm -rf {blank}")
