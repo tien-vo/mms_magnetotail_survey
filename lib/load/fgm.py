@@ -1,8 +1,9 @@
 __all__ = ["load_fgm"]
 
 from pyspedas.mms import mms_load_fgm, mms_config
-from lib.utils import read_trange, TempDir
+from tempfile import TemporaryDirectory
 from pytplot import get_data, del_data
+from lib.utils import read_trange
 import astropy.constants as c
 import astropy.units as u
 import tvolib as tv
@@ -11,14 +12,14 @@ import h5py as h5
 import lib
 
 
-def load_fgm(probe, interval, drate="srvy", wipe=True):
+def load_fgm(probe, interval, drate="srvy"):
 
     trange = read_trange(interval, dtype=str)
     prefix = f"mms{probe}_fgm"
     suffix = f"{drate}_l2"
 
     # Load FGM data
-    with TempDir() as tmp_dir:
+    with TemporaryDirectory(dir=lib.tmp_dir) as tmp_dir:
         mms_config.CONFIG["local_data_dir"] = tmp_dir
         kw = dict(
             trange=trange,
@@ -38,11 +39,9 @@ def load_fgm(probe, interval, drate="srvy", wipe=True):
     _t, R_gsm = tv.utils.get_data(f"{prefix}_r_gsm_{suffix}")
     R_gsm = tv.numeric.interpol(R_gsm, _t, t)
 
-    if wipe:
-        del_data()
-
+    del_data()
     return dict(t=t.astype("f8"), B_gsm=B_gsm[:, :3], R_gsm=R_gsm[:, :3])
 
 
 if __name__ == "__main__":
-    data = load_fgm(1, 0, wipe=False)
+    data = load_fgm(1, 0)
