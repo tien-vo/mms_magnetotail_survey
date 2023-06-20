@@ -20,7 +20,7 @@ def load_edp(probe, interval, drate="fast"):
     prefix = f"mms{probe}_edp"
     suffix = f"{drate}_l2"
 
-    # Load EDP data
+    # Download EDP files
     with TemporaryDirectory(dir=lib.tmp_dir) as tmp_dir:
         mms_config.CONFIG["local_data_dir"] = tmp_dir
         edp_vars = ["dce_gse", "dce_err", "bitmask"]

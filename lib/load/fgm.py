@@ -18,7 +18,7 @@ def load_fgm(probe, interval, drate="srvy"):
     prefix = f"mms{probe}_fgm"
     suffix = f"{drate}_l2"
 
-    # Load FGM data
+    # Download FGM files
     with TemporaryDirectory(dir=lib.tmp_dir) as tmp_dir:
         mms_config.CONFIG["local_data_dir"] = tmp_dir
         kw = dict(
