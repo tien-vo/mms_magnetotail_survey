@@ -10,7 +10,8 @@ def helper(probe, interval):
     for species in ["ion", "elc"]:
         data = load_fpi_moms(probe, interval, drate="fast", species=species)
         write_dataset(probe, interval, f"{species}-fpi-moms", data)
-        print(f"MMS{probe}: Saved {species} FPI moment data for interval {interval}", flush=True)
+
+    print(f"MMS{probe}: Saved FPI moment data for interval {interval}", flush=True)
 
 
 probes = [1,]
