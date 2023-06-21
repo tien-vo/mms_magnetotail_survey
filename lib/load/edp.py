@@ -40,12 +40,13 @@ def load_edp(probe, interval, drate="fast"):
             time_clip=True,
             varnames=[f"mms{probe}_mec_quat_eci_to_{coord}" for coord in mec_coords],
         )
-        try:
-            mms_load_edp(latest_version=True, **edp_kw)
-            mms_load_mec(latest_version=True, **mec_kw)
-        except OSError:
-            mms_load_edp(major_version=True, **edp_kw)
-            mms_load_mec(major_version=True, **mec_kw)
+        for _ in range(3):
+            try:
+                mms_load_edp(latest_version=True, **edp_kw)
+                mms_load_mec(latest_version=True, **mec_kw)
+            except OSError:
+                mms_load_edp(major_version=True, **edp_kw)
+                mms_load_mec(major_version=True, **mec_kw)
 
     # Rotate GSE to GSM
     for coord in mec_coords:

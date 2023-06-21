@@ -29,10 +29,13 @@ def load_fgm(probe, interval, drate="srvy"):
             get_fgm_ephemeris=True,
             varnames=[f"{prefix}_b_gsm_{suffix}", f"{prefix}_r_gsm_{suffix}"],
         )
-        try:
-            mms_load_fgm(latest_version=True, **kw)
-        except OSError:
-            mms_load_fgm(major_version=True, **kw)
+        for _ in range(3):
+            try:
+                mms_load_fgm(latest_version=True, **kw)
+                break
+            except OSError:
+                mms_load_fgm(major_version=True, **kw)
+                break
 
     # Unpack data
     t, B_gsm = tv.utils.get_data(f"{prefix}_b_gsm_{suffix}")

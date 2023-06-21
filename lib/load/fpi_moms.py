@@ -32,7 +32,7 @@ def load_fpi_moms(probe, interval, drate="fast", species="elc", E_cutoff=60 * u.
             probe=probe,
             data_rate=drate,
             datatype=[f"{dtype}-moms", f"{dtype}-partmoms"],
-            notplot=True,
+            notplot=True,  # pyspedas not plotting all of the data, awaiting updates
             time_clip=True,
             get_support_data=True,
             center_measurement=True,
@@ -44,10 +44,8 @@ def load_fpi_moms(probe, interval, drate="fast", species="elc", E_cutoff=60 * u.
             time_clip=True,
             varnames=[f"mms{probe}_mec_quat_eci_to_{coord}" for coord in mec_coords],
         )
-        for i in range(3):
+        for _ in range(3):
             try:
-                if i != 0:
-                    print(f"MMS{probe}: Retrying #{i} to load {species} data for interval {interval}", flush=True)
                 data = mms_load_fpi(latest_version=True, **fpi_kw)
                 mms_load_mec(latest_version=True, **mec_kw)
                 break
