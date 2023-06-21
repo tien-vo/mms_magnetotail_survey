@@ -3,7 +3,6 @@ __all__ = ["load_fpi_moms"]
 from pyspedas.mms import mms_load_fpi, mms_load_mec, mms_config
 from pyspedas.mms.cotrans.mms_qcotrans import mms_qcotrans
 from pytplot import get_data, store_data, del_data
-from tempfile import TemporaryDirectory
 from lib.utils import read_trange
 from pyspedas import tinterpol
 import astropy.constants as c
@@ -11,6 +10,7 @@ import astropy.units as u
 import tvolib as tv
 import numpy as np
 import h5py as h5
+import tempfile
 import lib
 
 
@@ -24,7 +24,8 @@ def load_fpi_moms(probe, interval, drate="fast", species="elc", E_cutoff=60 * u.
     suffix = f"{drate}"
 
     # Download FPI moment files
-    with TemporaryDirectory(dir=lib.tmp_dir) as tmp_dir:
+    with tempfile.TemporaryDirectory(dir=lib.tmp_dir) as tmp_dir:
+        tempfile.tempdir = tmp_dir
         mms_config.CONFIG["local_data_dir"] = tmp_dir
         mec_coords = ["gse", "gsm", "dbcs"]
         fpi_kw = dict(

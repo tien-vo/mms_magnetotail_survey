@@ -2,7 +2,6 @@ __all__ = ["load_edp"]
 
 from pyspedas.mms import mms_load_edp, mms_load_mec, mms_config
 from pyspedas.mms.cotrans.mms_qcotrans import mms_qcotrans
-from tempfile import TemporaryDirectory
 from pytplot import get_data, del_data
 from lib.utils import read_trange
 from pyspedas import tinterpol
@@ -11,6 +10,7 @@ import astropy.units as u
 import tvolib as tv
 import numpy as np
 import h5py as h5
+import tempfile
 import lib
 
 
@@ -21,7 +21,8 @@ def load_edp(probe, interval, drate="fast"):
     suffix = f"{drate}_l2"
 
     # Download EDP files
-    with TemporaryDirectory(dir=lib.tmp_dir) as tmp_dir:
+    with tempfile.TemporaryDirectory(dir=lib.tmp_dir) as tmp_dir:
+        tempfile.tempdir = tmp_dir
         mms_config.CONFIG["local_data_dir"] = tmp_dir
         edp_vars = ["dce_gse", "dce_err", "bitmask"]
         mec_coords = ["gse", "gsm", "dsl"]
@@ -44,9 +45,11 @@ def load_edp(probe, interval, drate="fast"):
             try:
                 mms_load_edp(latest_version=True, **edp_kw)
                 mms_load_mec(latest_version=True, **mec_kw)
+                break
             except OSError:
                 mms_load_edp(major_version=True, **edp_kw)
                 mms_load_mec(major_version=True, **mec_kw)
+                break
 
     # Rotate GSE to GSM
     for coord in mec_coords:

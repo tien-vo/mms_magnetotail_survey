@@ -1,7 +1,6 @@
 __all__ = ["load_fgm"]
 
 from pyspedas.mms import mms_load_fgm, mms_config
-from tempfile import TemporaryDirectory
 from pytplot import get_data, del_data
 from lib.utils import read_trange
 import astropy.constants as c
@@ -9,6 +8,7 @@ import astropy.units as u
 import tvolib as tv
 import numpy as np
 import h5py as h5
+import tempfile
 import lib
 
 
@@ -19,7 +19,8 @@ def load_fgm(probe, interval, drate="srvy"):
     suffix = f"{drate}_l2"
 
     # Download FGM files
-    with TemporaryDirectory(dir=lib.tmp_dir) as tmp_dir:
+    with tempfile.TemporaryDirectory(dir=lib.tmp_dir) as tmp_dir:
+        tempfile.tempdir = tmp_dir
         mms_config.CONFIG["local_data_dir"] = tmp_dir
         kw = dict(
             trange=trange,
