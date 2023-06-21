@@ -12,8 +12,8 @@ def helper(probe, interval):
     print(f"MMS{probe}: Saved EDP data for interval {interval}", flush=True)
 
 
-probes = [1, 3, 4]
-intervals = range(read_num_intervals())
+probes = [1,]
+intervals = range(1580, read_num_intervals())
 instrument = "edp"
 for probe in probes:
     os.makedirs(f"{lib.h5_dir}/mms{probe}/{instrument}", exist_ok=True)

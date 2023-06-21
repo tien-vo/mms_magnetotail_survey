@@ -25,7 +25,5 @@ def read_dataset(where):
         data = h5f[where][:]
         if "unit" in h5f[where].attrs:
             data *= u.Unit(h5f[where].attrs["unit"])
-        if data.dtype == "S29":
-            data = np.array(data, dtype="datetime64[ns]")
 
     return data

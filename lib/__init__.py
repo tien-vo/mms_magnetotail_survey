@@ -10,3 +10,4 @@ for dir in [data_dir, postprocess_dir, tmp_dir, h5_dir]:
     os.makedirs(dir, exist_ok=True)
 
 data_file = f"{data_dir}/data.h5"
+analysis_file = f"{data_dir}/analysis.h5"
