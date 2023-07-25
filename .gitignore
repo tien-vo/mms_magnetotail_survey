@@ -1,2 +1,6 @@
 data/
 __pycache__/
+*.h5
+*.png
+log
+tmp

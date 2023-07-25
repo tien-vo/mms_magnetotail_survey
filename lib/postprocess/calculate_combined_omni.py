@@ -101,9 +101,9 @@ def combine_omni(interval, species="ion", N_ext=5, mask_cutoff=True, bg_remove=F
 
 def run():
 
-    #for interval in range(read_num_intervals()):
     #for interval in range(1):
-    for interval in [418,]:
+    #for interval in [418,]:
+    for interval in range(read_num_intervals()):
         combine_omni(interval, species="ion", bg_remove=True, factor=0.8)
         combine_omni(interval, species="elc",)
 
@@ -159,8 +159,9 @@ def plot_test(interval):
     ax.plot(t_elc, P_nt_elc / P_elc * 100, "-b")
     ax.set_ylabel("%")
 
-    #for (i, ax) in enumerate(axes):
-    #    ax.set_xlim(np.datetime64("2017-07-26T07:10"), np.datetime64("2017-07-26T07:45"))
+    for (i, ax) in enumerate(axes):
+        #ax.set_xlim(np.datetime64("2017-07-26T07:28:20"), np.datetime64("2017-07-26T07:29:20"))
+        ax.set_xlim(np.datetime64("2017-07-26T07:10"), np.datetime64("2017-07-26T07:50"))
 
     fig.tight_layout(h_pad=0.05)
     fig.savefig("test.png")
@@ -169,5 +170,5 @@ def plot_test(interval):
 if __name__ == "__main__":
     warnings.filterwarnings("ignore")
 
-    #run()
-    plot_test(418)
+    run()
+    #plot_test(418)

@@ -55,16 +55,23 @@ def load_fpi_moms(probe, interval, drate="fast", species="elc", E_cutoff=60 * u.
                 mms_load_mec(major_version=True, **mec_kw)
                 break
 
-    # Unpack time and perform sanity check of timing arrays
-    t = np.array(data[f"{prefix}_energyspectr_omni_{suffix}"]["x"], dtype="datetime64[ns]")
-    for var in [
+    vars = [
+        "energyspectr_omni",
         "numberdensity_part",
         "bulkv_part_gse",
         "bulkv_spintone_gse",
         "prestensor_part_gse",
         "bhat_dbcs",
         "scpmean",
-    ]:
+    ]
+    if data is None:
+        return None
+    elif any(f"{prefix}_{var}_{suffix}" not in data.keys() for var in vars):
+        return None
+
+    # Unpack time and perform sanity check of timing arrays
+    t = np.array(data[f"{prefix}_energyspectr_omni_{suffix}"]["x"], dtype="datetime64[ns]")
+    for var in vars:
         assert (np.array(data[f"{prefix}_{var}_{suffix}"]["x"], dtype="datetime64[ns]") == t).all()
 
     # Unpack other variables
@@ -125,4 +132,13 @@ def load_fpi_moms(probe, interval, drate="fast", species="elc", E_cutoff=60 * u.
 
 
 if __name__ == "__main__":
-    data = load_fpi_moms(1, 418, species="ion")
+    #data = load_fpi_moms(1, 418, species="ion")
+    data = load_fpi_moms(2, 627, species="ion")
+    var = [
+        "numberdensity_part",
+        "bulkv_part_gse",
+        "bulkv_spintone_gse",
+        "prestensor_part_gse",
+        "bhat_dbcs",
+        "scpmean",
+    ]

@@ -14,8 +14,8 @@ def helper(probe, interval):
     print(f"MMS{probe}: Saved {species} FEEPS data for interval {interval}", flush=True)
 
 
-probes = [1,]
-intervals = range(read_num_intervals())
+probes = [4,]
+intervals = range(250, read_num_intervals())
 
 for probe in probes:
     for species in ["ion", "elc"]:

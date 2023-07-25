@@ -79,12 +79,13 @@ def load_feeps(probe, interval, drate="srvy", species="elc"):
     cnd = (0 <= (eflux_err / eflux)) & ((eflux_err / eflux) <= 1)
     eflux_omni = np.nanmean(eflux, axis=0, where=cnd) * geometric_factor[species][str(probe)]
 
-    # 2/3rd spin averages
-    window = 2 / 3 * (19.67 * u.s / tv.utils.sampling_period(t)).decompose()
-    eflux_omni_avg = tv.numeric.move_avg(eflux_omni, (window, 1), smooth=True)
+    ## 2/3rd spin averages
+    #window = 2 / 3 * (19.67 * u.s / tv.utils.sampling_period(t)).decompose()
+    #eflux_omni_avg = tv.numeric.move_avg(eflux_omni, (window, 1), smooth=True)
 
     del_data()
-    return dict(t=t.astype("f8"), f_omni_energy=energy, f_omni=eflux_omni, f_omni_avg=eflux_omni_avg)
+    #return dict(t=t.astype("f8"), f_omni_energy=energy, f_omni=eflux_omni, f_omni_avg=eflux_omni_avg)
+    return dict(t=t.astype("f8"), f_omni_energy=energy, f_omni=eflux_omni)
 
 
 if __name__ == "__main__":
