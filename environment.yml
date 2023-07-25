@@ -1,0 +1,10 @@
+name: mms_magnetotail_survey
+channels:
+  - conda-forge
+  - nodefaults
+dependencies:
+  - python=3.11
+  - pip
+  - poetry
+platforms:
+  - linux-64

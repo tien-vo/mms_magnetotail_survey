@@ -4,3 +4,4 @@ __pycache__/
 *.png
 log
 tmp
+.install.stamp
