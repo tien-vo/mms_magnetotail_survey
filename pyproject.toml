@@ -4,12 +4,12 @@ version = "0.1.0"
 description = ""
 authors = ["Tien Vo <tien.a.vo@proton.me>"]
 readme = "README.md"
-packages = [{include = "src/lib"}]
+packages = [{include = "lib", from="src"}]
 
 [tool.poetry.dependencies]
 python = ">=3.11,<3.13"
 pyspedas = "^1.4.40"
-tvolib = "^0.1.1"
+tvolib = "*"
 h5py = "*"
 
 
