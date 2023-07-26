@@ -4,7 +4,6 @@ __all__ = ["fgm"]
 
 import tvolib as tv
 import numpy as np
-import h5py as h5
 import tempfile
 import lib
 from pyspedas.mms import mms_load_fgm, mms_config
@@ -13,7 +12,6 @@ from lib.utils import read_trange
 
 
 def fgm(probe, interval, drate="srvy"):
-
     trange = read_trange(interval, dtype=str)
     pfx = f"mms{probe}_fgm"
     sfx = f"{drate}_l2"

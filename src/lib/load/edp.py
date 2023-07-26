@@ -4,7 +4,6 @@ __all__ = ["edp"]
 
 import tvolib as tv
 import numpy as np
-import h5py as h5
 import tempfile
 import lib
 from pyspedas.mms import mms_load_edp, mms_load_mec, mms_config
@@ -15,7 +14,6 @@ from pyspedas import tinterpol
 
 
 def edp(probe, interval, drate="fast"):
-
     trange = read_trange(interval, dtype=str)
     pfx = f"mms{probe}_edp"
     sfx = f"{drate}_l2"
@@ -40,8 +38,7 @@ def edp(probe, interval, drate="fast"):
             data_rate="srvy" if drate == "fast" else drate,
             time_clip=True,
             varnames=[
-                f"mms{probe}_mec_quat_eci_to_{coord}"
-                for coord in mec_coords
+                f"mms{probe}_mec_quat_eci_to_{coord}" for coord in mec_coords
             ],
         )
         for _ in range(3):
@@ -56,13 +53,16 @@ def edp(probe, interval, drate="fast"):
 
     # Rotate GSE to GSM
     for coord in mec_coords:
-        tinterpol(f"mms{probe}_mec_quat_eci_to_{coord}",
-                  f"{pfx}_dce_gse_{sfx}", suffix="")
+        tinterpol(
+            f"mms{probe}_mec_quat_eci_to_{coord}",
+            f"{pfx}_dce_gse_{sfx}",
+            suffix="",
+        )
 
-    mms_qcotrans(f"{pfx}_dce_gse_{sfx}", f"{pfx}_dce_gsm_{sfx}",
-                 "gse", "gsm")
-    mms_qcotrans(f"{pfx}_dce_err_{sfx}", f"{pfx}_dce_gsm_err_{sfx}",
-                 "dsl", "gsm")
+    mms_qcotrans(f"{pfx}_dce_gse_{sfx}", f"{pfx}_dce_gsm_{sfx}", "gse", "gsm")
+    mms_qcotrans(
+        f"{pfx}_dce_err_{sfx}", f"{pfx}_dce_gsm_err_{sfx}", "dsl", "gsm"
+    )
 
     # Unpack data
     t, E_gsm = get(f"{pfx}_dce_gsm_{sfx}", dt=True, units=True)
@@ -70,8 +70,9 @@ def edp(probe, interval, drate="fast"):
     _, bitmask = get(f"{pfx}_bitmask_{sfx}", dt=True, units=True)
 
     del_data()
-    return dict(t=t.astype("f8"), E_gsm=E_gsm, E_gsm_err=E_gsm_err,
-                bitmask=bitmask)
+    return dict(
+        t=t.astype("f8"), E_gsm=E_gsm, E_gsm_err=E_gsm_err, bitmask=bitmask
+    )
 
 
 if __name__ == "__main__":
