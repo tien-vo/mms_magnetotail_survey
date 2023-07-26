@@ -2,7 +2,7 @@ SHELL = /bin/zsh -i
 NAME := mms_magnetotail_survey
 MAMBA := $(shell command -v micromamba 2> /dev/null)
 INSTALL_STAMP := .install.stamp
-CONDA_LOCK := conda-osx-64.lock
+CONDA_LOCK := conda-linux-64.lock
 POETRY_LOCK := poetry.lock
 
 
