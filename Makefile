@@ -22,6 +22,7 @@ $(INSTALL_STAMP): pyproject.toml $(POETRY_LOCK) $(CONDA_LOCK)
 	@micromamba create --quiet --yes --override-channels --name ${NAME} --file conda-linux-64.lock
 	@echo "Installing packages from $(POETRY_LOCK) ..."
 	@micromamba run -n ${NAME} poetry install
+	@micromamba run -n ${NAME} pip install spacepy --no-build-isolation
 	@touch $(INSTALL_STAMP)
 	@echo "Done installation!"
 

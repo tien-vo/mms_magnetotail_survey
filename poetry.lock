@@ -1198,13 +1198,13 @@ diagrams = ["jinja2", "railroad-diagrams"]
 
 [[package]]
 name = "pyspedas"
-version = "1.4.40"
+version = "1.4.41"
 description = "Python Space Physics Environment Data Analysis Software (pySPEDAS)"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "pyspedas-1.4.40-py3-none-any.whl", hash = "sha256:c254685ef2ec95c9864bf1438ef40a4ff596a8b2a6d2f209f66f2afda171f82e"},
-    {file = "pyspedas-1.4.40.tar.gz", hash = "sha256:770c50dca91bd207bf5d9160565116abb58e3cd4dc792828542540b87ee37d11"},
+    {file = "pyspedas-1.4.41-py3-none-any.whl", hash = "sha256:0739d54ffc953ce8d9a6043e9c353034f48a846d5405020916892274e17b1ff0"},
+    {file = "pyspedas-1.4.41.tar.gz", hash = "sha256:2813abe46dd249947475e18a833d6c9578a105b7f375339f98068cd87efa9fde"},
 ]
 
 [package.dependencies]
@@ -1503,13 +1503,13 @@ telegram = ["requests"]
 
 [[package]]
 name = "tvolib"
-version = "0.2.0"
+version = "0.2.2"
 description = "A personal collection of Python and IDL research tools in Space Plasma Physics."
 optional = false
 python-versions = ">=3.10,<3.13"
 files = [
-    {file = "tvolib-0.2.0-py3-none-any.whl", hash = "sha256:23fcef363bdc03d48939ae97ae388c1fbb38cd0afa72d27b32f7d4c83b1d6824"},
-    {file = "tvolib-0.2.0.tar.gz", hash = "sha256:ba2629f6019676042eb8facd224b35d4c4a552836534e704c7d2c6c095fdbabe"},
+    {file = "tvolib-0.2.2-py3-none-any.whl", hash = "sha256:9e8f35b88d6ecb3fc420bd704494ef9766cacecec43596ca758eb15a4597ebdb"},
+    {file = "tvolib-0.2.2.tar.gz", hash = "sha256:086cb7ee97897a6ac5a525b2d2fc373d7053050de5b4497b68714307e2d72858"},
 ]
 
 [package.dependencies]
