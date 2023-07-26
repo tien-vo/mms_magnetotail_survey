@@ -60,9 +60,8 @@ def edp(probe, interval, drate="fast"):
         )
 
     mms_qcotrans(f"{pfx}_dce_gse_{sfx}", f"{pfx}_dce_gsm_{sfx}", "gse", "gsm")
-    mms_qcotrans(
-        f"{pfx}_dce_err_{sfx}", f"{pfx}_dce_gsm_err_{sfx}", "dsl", "gsm"
-    )
+    mms_qcotrans(f"{pfx}_dce_err_{sfx}", f"{pfx}_dce_gsm_err_{sfx}", "dsl",
+                 "gsm")
 
     # Unpack data
     t, E_gsm = get(f"{pfx}_dce_gsm_{sfx}", dt=True, units=True)
@@ -70,9 +69,10 @@ def edp(probe, interval, drate="fast"):
     _, bitmask = get(f"{pfx}_bitmask_{sfx}", dt=True, units=True)
 
     del_data()
-    return dict(
-        t=t.astype("f8"), E_gsm=E_gsm, E_gsm_err=E_gsm_err, bitmask=bitmask
-    )
+    return dict(t=t.astype("f8"),
+                E_gsm=E_gsm,
+                E_gsm_err=E_gsm_err,
+                bitmask=bitmask)
 
 
 if __name__ == "__main__":

@@ -1,6 +1,5 @@
 import os
 
-
 cwd = os.getcwd()
 data_dir = f"{cwd}/data"
 h5_dir = f"{data_dir}/h5"
