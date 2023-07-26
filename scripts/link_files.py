@@ -5,18 +5,24 @@ import lib
 import os
 
 h5f = h5.File(lib.data_file, "w")
-for root, dirs, files in os.walk(lib.h5_dir):
+for root, dirs, files in os.walk(dir := lib.h5_dir):
     if len(dirs) > 0:
         continue
 
-    path = os.path.relpath(root, lib.h5_dir)
+    path = os.path.relpath(root, dir)
     for f in files:
         h5f[f"{path}/{os.path.splitext(f)[0]}"] = h5.ExternalLink(
             f"{root}/{f}", "/")
 
 
-#for interval in range(N_intervals):
-#    h5f[f"postprocess/interval_{interval}"] = h5.ExternalLink(
-#        lib.postprocess_dir / f"interval_{interval}.h5", "/")
-#
+for root, dirs, files in os.walk(dir := lib.postprocess_dir):
+    if len(dirs) > 0:
+        continue
+
+    path = os.path.relpath(root, dir)
+    for f in files:
+        h5f[f"/postprocess/{path}/{os.path.splitext(f)[0]}"] = h5.ExternalLink(
+            f"{root}/{f}", "/")
+
+
 #h5f["analysis"] = h5.ExternalLink(lib.data_dir / "analysis.h5", "/")
