@@ -7,13 +7,17 @@ import lib
 
 
 def read_trange(interval, dtype=str):
-    h5f = h5.File(lib.data_file, "r")
-    return h5f["/trange"][interval, :].astype("datetime64[ns]").astype(dtype)
+    trange = np.loadtxt(
+        lib.resource_dir / "intervals.csv",
+        delimiter=",").astype("datetime64[s]").astype("datetime64[ns]")
+    return trange[interval, :].astype(dtype)
 
 
 def read_num_intervals():
-    h5f = h5.File(lib.data_file, "r")
-    return h5f["/trange"].shape[0]
+    trange = np.loadtxt(
+        lib.resource_dir / "intervals.csv",
+        delimiter=",").astype("datetime64[s]").astype("datetime64[ns]")
+    return trange.shape[0]
 
 
 def read_data(where):
