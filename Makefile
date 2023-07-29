@@ -10,7 +10,7 @@ POETRY_LOCK := poetry.lock
 
 .PHONY: help
 help:
-	@echo "Edit help string"
+	@echo "TODO: Edit help string"
 	@echo $(POETRY)
 
 install: $(INSTALL_STAMP)
@@ -26,6 +26,11 @@ $(INSTALL_STAMP): pyproject.toml $(POETRY_LOCK) $(CONDA_LOCK)
 	@micromamba run -n ${NAME} pip install spacepy --no-build-isolation
 	@touch $(INSTALL_STAMP)
 	@echo "Done installation!"
+
+.PHONY: format
+format:
+	poetry run isort src/
+	poetry run black -l 79 src/
 
 .PHONY: clean
 clean:

@@ -1,7 +1,8 @@
 [tool.poetry]
 name = "mms-magnetotail-survey"
 version = "0.1.0"
-description = ""
+description = "Contains Python code for processing MMS data during magnetotail seasons"
+license = "GPL-3.0-or-later"
 authors = ["Tien Vo <tien.a.vo@proton.me>"]
 readme = "README.md"
 packages = [{include = "lib", from="src"}]
@@ -11,6 +12,13 @@ python = ">=3.11,<3.13"
 pyspedas = "^1.4.40"
 tvolib = ">=0.4.0"
 h5py = "*"
+
+[tool.poetry.group.dev]
+optional = true
+
+[tool.poetry.group.dev.dependencies]
+black = "*"
+isort = "*"
 
 
 [build-system]
