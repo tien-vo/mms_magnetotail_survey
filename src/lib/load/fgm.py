@@ -2,12 +2,14 @@ r"""Load MMS-FGM data into a dictionary"""
 
 __all__ = ["fgm"]
 
-import tvolib as tv
-import numpy as np
 import tempfile
+
+import numpy as np
+import tvolib as tv
+from pyspedas.mms import mms_config, mms_load_fgm
+from pytplot import del_data, get
+
 import lib
-from pyspedas.mms import mms_load_fgm, mms_config
-from pytplot import get, del_data
 from lib.utils import read_trange
 
 

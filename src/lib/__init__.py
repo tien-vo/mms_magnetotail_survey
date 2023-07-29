@@ -1,6 +1,5 @@
 from pathlib import Path
 
-
 work_dir = Path(__file__).resolve().parent / ".." / ".."
 resource_dir = work_dir / "resources"
 data_dir = work_dir / "data"

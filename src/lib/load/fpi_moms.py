@@ -1,16 +1,18 @@
 __all__ = ["fpi_moms"]
 
+import tempfile
+
 import astropy.constants as c
 import astropy.units as u
-import tvolib as tv
 import numpy as np
-import tempfile
-import lib
-from pyspedas.mms import mms_load_fpi, mms_load_mec, mms_config
-from pyspedas.mms.cotrans.mms_qcotrans import mms_qcotrans
-from pytplot import get, store_data, del_data
-from lib.utils import read_trange
+import tvolib as tv
 from pyspedas import tinterpol
+from pyspedas.mms import mms_config, mms_load_fpi, mms_load_mec
+from pyspedas.mms.cotrans.mms_qcotrans import mms_qcotrans
+from pytplot import del_data, get, store_data
+
+import lib
+from lib.utils import read_trange
 
 
 def fpi_moms(probe, interval, drate="fast", species="elc", E_cutoff=60 * u.eV):
@@ -72,14 +74,17 @@ def fpi_moms(probe, interval, drate="fast", species="elc", E_cutoff=60 * u.eV):
     # Unpack time and perform sanity check of timing arrays
     t = data[f"{pfx}_energyspectr_omni_{sfx}"]["x"].astype("datetime64[ns]")
     for var in vars:
-        assert (data[f"{pfx}_{var}_{sfx}"]["x"].astype("datetime64[ns]") == t
-                ).all()
+        assert (
+            data[f"{pfx}_{var}_{sfx}"]["x"].astype("datetime64[ns]") == t
+        ).all()
 
     # Unpack other variables
     f_omni = data[f"{pfx}_energyspectr_omni_{sfx}"]["y"] * u.Unit(
-        "cm-2 s-1 sr-1")
+        "cm-2 s-1 sr-1"
+    )
     f_omni_energy = (data[f"{pfx}_energyspectr_omni_{sfx}"]["v"] * u.eV).to(
-        u.keV)
+        u.keV
+    )
     Vsc = (charge * data[f"{pfx}_scpmean_{sfx}"]["y"] * u.V).to(u.keV)
     idx = np.nanargmin(np.abs(f_omni_energy - E_cutoff), axis=1)
     b_dbcs = data[f"{pfx}_bhat_dbcs_{sfx}"]["y"]
@@ -94,11 +99,14 @@ def fpi_moms(probe, interval, drate="fast", species="elc", E_cutoff=60 * u.eV):
         axis=1,
     ).squeeze() * u.Unit("km / s")
     V_gse -= data[f"{pfx}_bulkv_spintone_gse_{sfx}"]["y"] * u.Unit("km / s")
-    P_tensor_gse = (np.take_along_axis(
-        data[f"{pfx}_prestensor_part_gse_{sfx}"]["y"],
-        idx[:, np.newaxis, np.newaxis, np.newaxis],
-        axis=1,
-    ).squeeze() * u.nPa).to(u.Unit("keV cm-3"))
+    P_tensor_gse = (
+        np.take_along_axis(
+            data[f"{pfx}_prestensor_part_gse_{sfx}"]["y"],
+            idx[:, np.newaxis, np.newaxis, np.newaxis],
+            axis=1,
+        ).squeeze()
+        * u.nPa
+    ).to(u.Unit("keV cm-3"))
 
     # Rotate V_gse to GSM
     store_data(
@@ -116,10 +124,12 @@ def fpi_moms(probe, interval, drate="fast", species="elc", E_cutoff=60 * u.eV):
             suffix="",
         )
 
-    mms_qcotrans(f"{pfx}_bulkv_gse_{sfx}", f"{pfx}_bulkv_gsm_{sfx}", "gse",
-                 "gsm")
-    mms_qcotrans(f"{pfx}_bhat_dbcs_{sfx}", f"{pfx}_bhat_gse_{sfx}", "dbcs",
-                 "gse")
+    mms_qcotrans(
+        f"{pfx}_bulkv_gse_{sfx}", f"{pfx}_bulkv_gsm_{sfx}", "gse", "gsm"
+    )
+    mms_qcotrans(
+        f"{pfx}_bhat_dbcs_{sfx}", f"{pfx}_bhat_gse_{sfx}", "dbcs", "gse"
+    )
     V_gsm = get(f"{pfx}_bulkv_gsm_{sfx}").y * u.Unit("km/s")
     b_gse = get(f"{pfx}_bhat_gse_{sfx}").y
 
@@ -127,7 +137,8 @@ def fpi_moms(probe, interval, drate="fast", species="elc", E_cutoff=60 * u.eV):
     if species == "ion":
         N_bg = data[f"{pfx}_numberdensity_bg_{sfx}"]["y"] * u.Unit("cm-3")
         P_bg = (data[f"{pfx}_pres_bg_{sfx}"]["y"] * u.nPa).to(
-            u.Unit("keV cm-3"))
+            u.Unit("keV cm-3")
+        )
         bg_data = dict(N_bg=N_bg, P_bg=P_bg)
     else:
         bg_data = dict()

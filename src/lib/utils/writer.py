@@ -1,13 +1,13 @@
 __all__ = ["write_data"]
 
 import astropy.units as u
-import numpy as np
 import h5py as h5
+import numpy as np
+
 import lib
 
 
 def write_data(probe, interval, instrument, data, where=None):
-
     fname = f"{lib.h5_dir}/mms{probe}/{instrument}/interval_{interval}.h5"
     h5f = h5.File(fname, "a")
 
