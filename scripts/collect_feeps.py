@@ -1,10 +1,12 @@
 import os
-import lib
+from itertools import product
+
 import h5py as h5
 from pathos.pools import ProcessPool as Pool
-from itertools import product
-from lib.utils import write_data, read_num_intervals
+
+import lib
 from lib.load import feeps
+from lib.utils import read_num_intervals, write_data
 
 
 def helper(probe, interval):
@@ -12,8 +14,10 @@ def helper(probe, interval):
         data = feeps(probe, interval, drate="srvy", species=species)
         write_data(probe, interval, f"{species}-feeps", data)
 
-    print(f"MMS{probe}: Saved {species} FEEPS data for interval {interval}",
-          flush=True)
+    print(
+        f"MMS{probe}: Saved {species} FEEPS data for interval {interval}",
+        flush=True,
+    )
 
 
 probes = range(1, 5)
@@ -25,6 +29,6 @@ for probe in probes:
         for intv in intervals:
             h5.File(where / f"interval_{intv}.h5", "w")
 
-#with Pool(8) as pool:
+# with Pool(8) as pool:
 #    for _ in pool.uimap(lambda args: helper(*args), product(probes, intervals)):
 #        pass

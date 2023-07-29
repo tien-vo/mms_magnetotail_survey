@@ -1,15 +1,19 @@
 import os
-import lib
+from itertools import product
+
 import h5py as h5
 from pathos.pools import ProcessPool as Pool
-from itertools import product
-from lib.utils import write_data, read_num_intervals
+
+import lib
 from lib.load import fpi_moms
+from lib.utils import read_num_intervals, write_data
 
 
 def helper(probe, interval):
-    print(f"MMS{probe}: Saving FPI moment data for interval {interval}",
-          flush=True)
+    print(
+        f"MMS{probe}: Saving FPI moment data for interval {interval}",
+        flush=True,
+    )
     for species in ["ion", "elc"]:
         data = fpi_moms(probe, interval, drate="fast", species=species)
         if data is not None:
@@ -17,7 +21,8 @@ def helper(probe, interval):
         else:
             with open("log", "a") as f:
                 f.write(
-                    f"MMS{probe},intv{interval},{species} data not loaded.\n")
+                    f"MMS{probe},intv{interval},{species} data not loaded.\n"
+                )
 
 
 probes = range(1, 5)
@@ -29,6 +34,6 @@ for probe in probes:
         for intv in intervals:
             h5.File(where / f"interval_{intv}.h5", "w")
 
-#with Pool(8) as pool:
+# with Pool(8) as pool:
 #    for _ in pool.uimap(lambda args: helper(*args), product(probes, intervals)):
 #        pass
