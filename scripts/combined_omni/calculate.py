@@ -33,9 +33,9 @@ def combine_omni(
     if bg_remove:
         f_sorted = np.take_along_axis(f_fpi, np.argsort(f_fpi, axis=1), axis=1)
         f_fpi = f_fpi - np.nanmean(f_sorted[:, :5], axis=1)[:, np.newaxis]
-        f_fpi[
-            f_fpi <= f_omni_background(E_fpi, species=species, factor=factor)
-        ] = np.nan
+    f_fpi[
+        f_fpi <= f_omni_background(E_fpi, species=species, factor=factor)
+    ] = np.nan
 
     t_feeps = read_data(f"mms1/{species}-feeps/interval_{interval}/t").astype(
         "datetime64[ns]"
@@ -119,7 +119,7 @@ if __name__ == "__main__":
     with Pool() as p:
         for _ in p.uimap(
             lambda i: combine_omni(
-                i, species="ion", bg_remove=True, factor=0.8
+                i, species="ion", bg_remove=True, factor=1.5
             ),
             intervals,
         ):

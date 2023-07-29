@@ -30,7 +30,8 @@ $(INSTALL_STAMP): pyproject.toml $(POETRY_LOCK) $(CONDA_LOCK)
 .PHONY: format
 format:
 	poetry run isort src/ scripts/
-	poetry run black -l 79 src/ scripts/
+	poetry run black -l 79 src/
+	poetry run black -l 120 scripts/
 
 .PHONY: clean
 clean:
