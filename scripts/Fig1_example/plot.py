@@ -169,5 +169,56 @@ for (i, ax) in enumerate(ts_axes):
     if i < len(ts_axes) - 1:
         ax.set_xticklabels([])
 
+skw = dict(s=15)
+
+# Ion & elc distribution at different times
+Wg_ion_raw = read_data(f"/mms1/ion-fpi-moms/interval_{interval}/f_omni_energy")
+f_ion_raw = read_data(f"/mms1/ion-fpi-moms/interval_{interval}/f_omni")
+Vsc = read_data(f"mms1/ion-fpi-moms/interval_{interval}/Vsc")
+f_ion_raw[(Wg_ion_raw < 60 * u.eV) | (Wg_ion_raw < np.abs(Vsc)[:, np.newaxis])] = np.nan
+f_sorted = np.take_along_axis(f_ion_raw, np.argsort(f_ion_raw, axis=1), axis=1)
+f_ion_raw = f_ion_raw - np.nanmean(f_sorted[:, :5], axis=1)[:, np.newaxis]
+axi = fig.add_subplot(gs[0:4, 4])
+axi.scatter(Wg_ion_raw[ii1, :].value, f_ion_raw[ii1, :].value, ec="b", fc="none", **skw)
+axi.scatter(Wg_ion_raw[ii2, :].value, f_ion_raw[ii2, :].value, ec="g", fc="none", **skw)
+axi.scatter(Wg_ion_raw[ii3, :].value, f_ion_raw[ii3, :].value, ec="r", fc="none", **skw)
+axi.scatter(Wg_ion[ii1, :].value, f_ion[ii1, :].value, fc="b", ec="b", **skw)
+axi.scatter(Wg_ion[ii2, :].value, f_ion[ii2, :].value, fc="g", ec="g", **skw)
+axi.scatter(Wg_ion[ii3, :].value, f_ion[ii3, :].value, fc="r", ec="r", **skw)
+
+Wg_elc_raw = read_data(f"/mms1/elc-fpi-moms/interval_{interval}/f_omni_energy")
+f_elc_raw = read_data(f"/mms1/elc-fpi-moms/interval_{interval}/f_omni")
+axe = fig.add_subplot(gs[4:, 4])
+axe.scatter(Wg_elc_raw[ii1, :].value, f_elc_raw[ii1, :].value, ec="b", fc="none", **skw)
+axe.scatter(Wg_elc_raw[ii2, :].value, f_elc_raw[ii2, :].value, ec="g", fc="none", **skw)
+axe.scatter(Wg_elc_raw[ii3, :].value, f_elc_raw[ii3, :].value, ec="r", fc="none", **skw)
+axe.scatter(Wg_elc[ii1, :].value, f_elc[ii1, :].value, fc="b", ec="b", **skw)
+axe.scatter(Wg_elc[ii2, :].value, f_elc[ii2, :].value, fc="g", ec="g", **skw)
+axe.scatter(Wg_elc[ii3, :].value, f_elc[ii3, :].value, fc="r", ec="r", **skw)
+
+vc_axes = [axi, axe]
+vc_labels = ["(i) Ion eflux", "(j) Elc eflux"]
+fig.align_ylabels(vc_axes)
+kw = dict(x=0.1, transform=axi.transAxes, fontsize="small")
+axi.text(y=0.9, s=t_ion[ii1].astype(str)[11:19], color="b", **kw)
+axi.text(y=0.8, s=t_ion[ii2].astype(str)[11:19], color="g", **kw)
+axi.text(y=0.7, s=t_ion[ii3].astype(str)[11:19], color="r", **kw)
+
+for (i, ax) in enumerate(vc_axes):
+    ax.set_xscale("log")
+    ax.set_yscale("log")
+    ax.set_xlim(1e-1, 1e3)
+    ax.set_ylim(1e2, 1e8)
+    ax.set_yticks(10 ** np.arange(2, 8, 1))
+    ax.set_ylabel(f"{f_ion.unit:latex_inline}")
+    ax.text(0.05, 0.04, vc_labels[i], transform=ax.transAxes, bbox=dict(facecolor="wheat", alpha=0.9))
+    for j in range(2):
+        ax.axvline(icutoffs[j].value if i == 0 else ecutoffs[j].value, c="magenta", ls="--", lw=2)
+
+    if i == 0:
+        ax.set_xticklabels([])
+    else:
+        ax.set_xlabel(f"Energy ({Wg_ion.unit:latex_inline})", fontsize="small")
+
 fig.savefig(lib.plot_dir / "Fig1_example-revised.pdf", dpi=600)
 fig.savefig(lib.plot_dir / "Fig1_example-revised.png", dpi=600)
