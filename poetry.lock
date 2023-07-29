@@ -1503,13 +1503,13 @@ telegram = ["requests"]
 
 [[package]]
 name = "tvolib"
-version = "0.2.2"
+version = "0.4.0"
 description = "A personal collection of Python and IDL research tools in Space Plasma Physics."
 optional = false
 python-versions = ">=3.10,<3.13"
 files = [
-    {file = "tvolib-0.2.2-py3-none-any.whl", hash = "sha256:9e8f35b88d6ecb3fc420bd704494ef9766cacecec43596ca758eb15a4597ebdb"},
-    {file = "tvolib-0.2.2.tar.gz", hash = "sha256:086cb7ee97897a6ac5a525b2d2fc373d7053050de5b4497b68714307e2d72858"},
+    {file = "tvolib-0.4.0-py3-none-any.whl", hash = "sha256:46f29bc2d5033026e26f4328a132fd5a1430137018b0f7c5707b32646cac6382"},
+    {file = "tvolib-0.4.0.tar.gz", hash = "sha256:6e0eae37f326c9f98176794a3ab55f7353c90ead7ea0aa0353a72e6de39b4ed5"},
 ]
 
 [package.dependencies]
@@ -1610,4 +1610,4 @@ viz = ["matplotlib", "nc-time-axis", "seaborn"]
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.11,<3.13"
-content-hash = "13cbdf983d41f999a7fedeaba1c40bbfeb2e902deec425370dbfde4c456a79de"
+content-hash = "d75fe76a2cdefb6a129157d9637de2a3c1fa2e30dee1d8d79e181ca29b98875b"
