@@ -1,7 +1,8 @@
-import astropy.constants as c
-import astropy.units as u
 import h5py as h5
 import numpy as np
+import astropy.units as u
+import astropy.constants as c
+
 from pathos.pools import ProcessPool as Pool
 from tvolib.numeric import interpol, curlometer
 
@@ -48,6 +49,7 @@ def calculate(interval):
 
     clm_data = curlometer(B1, B2, B3, B4, R1, R2, R3, R4)
     J_clm = (clm_data["curl_Q"] / c.si.mu0).to(u.Unit("nA m-2"))
+    J_err = (clm_data["div_Q"] / c.si.mu0).to(u.Unit("nA m-2"))
 
     J_para = np.einsum("...i,...i", J_clm, B_bc) / np.linalg.norm(
         B_bc, axis=-1
@@ -68,6 +70,7 @@ def calculate(interval):
         B_bc=B_bc,
         E_bc=E_bc,
         J_clm=J_clm,
+        J_err=J_err,
         J_para=J_para,
         E_para=E_para,
     ).items():
@@ -78,6 +81,7 @@ def calculate(interval):
 
 
 if __name__ == "__main__":
+    #calculate(0)
     with Pool() as p:
-        for _ in p.uimap(calculate, range(1100, read_num_intervals())):
+        for _ in p.uimap(calculate, range(read_num_intervals())):
             pass

@@ -5,7 +5,6 @@ from tvolib import mpl_utils as mu
 import lib
 from lib.utils import read_data
 
-
 # Event ID
 interval = 418
 trange = np.array(["2017-07-26T07:10", "2017-07-26T07:45"], dtype="datetime64[ns]")
@@ -80,7 +79,7 @@ ax4.set_ylabel(f"{Wg_ion.unit:latex_inline}")
 ax4.set_yscale("log")
 ax4.set_ylim(1e-1, 1e3)
 ax4.set_yticks(np.power(10.0, np.arange(-1, 3, 1)))
-im = ax4.pcolormesh(tg_ion, Wg_ion.value, f_ion.value, norm=mu.mplc.LogNorm(1e2, 1e8), cmap="jet", rasterized=True)
+im = ax4.pcolormesh(tg_ion, Wg_ion.value, f_ion.value, norm=mu.mplc.LogNorm(1e2, 1e8), cmap="jet")
 cb = fig.colorbar(im, ax=ax4, cax=cax4_r, ticks=np.logspace(0, 6, 3))
 cb.set_label(f"{f_ion.unit:latex_inline}", fontsize="x-small")
 ax4.axhline(icutoffs[0].value, c="magenta", ls="--", lw=2)
@@ -98,7 +97,7 @@ ax5.set_ylabel(f"{Wg_elc.unit:latex_inline}")
 ax5.set_yscale("log")
 ax5.set_ylim(1e-1, 1e3)
 ax5.set_yticks(np.power(10.0, np.arange(-1, 3, 1)))
-im = ax5.pcolormesh(tg_elc, Wg_elc.value, f_elc.value, norm=mu.mplc.LogNorm(1e2, 1e8), cmap="jet", rasterized=True)
+im = ax5.pcolormesh(tg_elc, Wg_elc.value, f_elc.value, norm=mu.mplc.LogNorm(1e2, 1e8), cmap="jet")
 cb = fig.colorbar(im, ax=ax5, cax=cax5_r, ticks=np.logspace(0, 6, 3))
 cb.set_label(f"{f_elc.unit:latex_inline}", fontsize="x-small")
 ax5.axhline(ecutoffs[0].value, c="magenta", ls="--", lw=2)
@@ -220,5 +219,5 @@ for (i, ax) in enumerate(vc_axes):
     else:
         ax.set_xlabel(f"Energy ({Wg_ion.unit:latex_inline})", fontsize="small")
 
-fig.savefig(lib.plot_dir / "Fig1_example-revised.pdf", dpi=600)
-fig.savefig(lib.plot_dir / "Fig1_example-revised.png", dpi=600)
+fig.savefig(lib.plot_dir / "Fig1_fpi_feeps_combined_example-revised.pdf", dpi=600)
+fig.savefig(lib.plot_dir / "Fig1_fpi_feeps_combined_example-revised.png", dpi=600)

@@ -28,5 +28,4 @@ for root, dirs, files in os.walk(dir := lib.postprocess_dir):
             f"{root}/{f}", "/"
         )
 
-
-# h5f["analysis"] = h5.ExternalLink(lib.data_dir / "analysis.h5", "/")
+h5f["analysis"] = h5.ExternalLink(lib.data_dir / "analysis.h5", "/")
