@@ -145,8 +145,7 @@ for (i, ax) in enumerate(axes):
     ax.axvline(0, ls=":")
 
 fig.tight_layout()
-fig.savefig(lib.plot_dir / "Fig4_J_slices.png", dpi=600)
-fig.savefig(lib.plot_dir / "Fig4_J_slices.pdf", dpi=600)
+fig.savefig(lib.plot_dir / "Fig4_J_slices.png", dpi=600, transparent=True)
 
 fig, axes = mu.plt.subplots(2, 2, figsize=(12, 10))
 kw = dict(cmap="jet", norm=(norm := mu.mplc.LogNorm(1e-4, 1e-1)), alpha=0.5)
@@ -210,5 +209,4 @@ for (i, j) in np.ndindex(axes.shape):
     ax.set_xlabel("$\\beta_i$", fontsize="large")
 
 fig.tight_layout(h_pad=0.1, w_pad=1)
-fig.savefig(lib.plot_dir / "Fig3_compare_B14-revised.pdf", dpi=600)
-fig.savefig(lib.plot_dir / "Fig3_compare_B14-revised.png", dpi=600)
+fig.savefig(lib.plot_dir / "Fig3_compare_B14.png", dpi=600, transparent=True)

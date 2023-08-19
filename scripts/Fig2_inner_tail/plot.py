@@ -69,5 +69,4 @@ for (i, ax) in enumerate(axes):
         ax.plot(x, -x, "--k", lw=2)
 
 fig.tight_layout()
-fig.savefig(lib.plot_dir / "Fig2_inner_tail.pdf", dpi=600)
-fig.savefig(lib.plot_dir / "Fig2_inner_tail.png", dpi=600)
+fig.savefig(lib.plot_dir / "Fig2_inner_tail.png", dpi=600, transparent=True)
