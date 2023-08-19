@@ -1,8 +1,7 @@
 data/
 __pycache__/
 *.h5
-*.png
-*.pdf
 log
 tmp
 .install.stamp
+scripts/**/*.png

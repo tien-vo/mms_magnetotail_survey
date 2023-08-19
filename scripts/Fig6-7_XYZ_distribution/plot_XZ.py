@@ -76,5 +76,5 @@ for (i, ax) in enumerate(axes):
         ax.set_ylabel("$Z$ ($R_E$)", fontsize="x-large")
 
 fig.tight_layout()
-fig.savefig(lib.plot_dir / "XZ_distribution.pdf", dpi=600)
-fig.savefig(lib.plot_dir / "XZ_distribution.png", dpi=600)
+fig.savefig(lib.plot_dir / "Fig6_XZ_distribution.pdf", dpi=600)
+fig.savefig(lib.plot_dir / "Fig6_XZ_distribution.png", dpi=600)
