@@ -1,8 +1,10 @@
 data/
 __pycache__/
 *.h5
-*.png
-*.pdf
+plots/
 log
 tmp
 .install.stamp
+*.blg
+*.log
+*.synctex.gz
