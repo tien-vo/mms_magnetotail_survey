@@ -103,4 +103,4 @@ for (i, ax) in enumerate(axes):
         ax.set_xlabel("$Y$ ($R_E$)")
 
 fig.tight_layout(h_pad=0.01)
-fig.savefig(lib.plot_dir / "Fig7_YZ_distribution.png", dpi=600, transparent=True)
+fig.savefig(lib.plot_dir / "Fig7_YZ_distribution.png", dpi=600)

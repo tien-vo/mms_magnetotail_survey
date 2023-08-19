@@ -84,7 +84,7 @@ cb = fig.colorbar(im, ax=ax4, cax=cax4_r, ticks=np.logspace(0, 6, 3))
 cb.set_label(f"{f_ion.unit:latex_inline}", fontsize="x-small")
 ax4.axhline(icutoffs[0].value, c="magenta", ls="--", lw=2)
 ax4.axhline(icutoffs[1].value, c="magenta", ls="--", lw=2)
-ax4.set_facecolor("silver")
+ax4.set_facecolor("darkgray")
 
 # MMS1 elc energy spectrum
 t_elc = read_data(f"/postprocess/interval_{interval}/elc/t").astype("datetime64[ns]")
@@ -102,7 +102,7 @@ cb = fig.colorbar(im, ax=ax5, cax=cax5_r, ticks=np.logspace(0, 6, 3))
 cb.set_label(f"{f_elc.unit:latex_inline}", fontsize="x-small")
 ax5.axhline(ecutoffs[0].value, c="magenta", ls="--", lw=2)
 ax5.axhline(ecutoffs[1].value, c="magenta", ls="--", lw=2)
-ax5.set_facecolor("silver")
+ax5.set_facecolor("darkgray")
 
 # MMS1 densities
 N_ion = read_data(f"/postprocess/interval_{interval}/ion/N")
@@ -219,4 +219,4 @@ for (i, ax) in enumerate(vc_axes):
     else:
         ax.set_xlabel(f"Energy ({Wg_ion.unit:latex_inline})", fontsize="small")
 
-fig.savefig(lib.plot_dir / "Fig1_fpi_feeps_combined_example.png", dpi=600, transparent=True)
+fig.savefig(lib.plot_dir / "Fig1_fpi_feeps_combined_example.png", dpi=600)

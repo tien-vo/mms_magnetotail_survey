@@ -51,7 +51,7 @@ for (i, ax) in enumerate(axes):
     ax.set_xlim(X.value.max(), X.value.min())
     ax.set_ylim(Y.value.max(), Y.value.min())
     ax.set_xticks(np.arange(-25, 6, 10, dtype=int))
-    ax.set_facecolor("grey")
+    ax.set_facecolor("darkgray")
     ax.set_xlabel("$X$ ($R_E$)")
     ax.text(0.05, 0.9, texts[i], transform=ax.transAxes, **tkw)
     if i == 0:
@@ -69,4 +69,4 @@ for (i, ax) in enumerate(axes):
         ax.plot(x, -x, "--k", lw=2)
 
 fig.tight_layout()
-fig.savefig(lib.plot_dir / "Fig2_inner_tail.png", dpi=600, transparent=True)
+fig.savefig(lib.plot_dir / "Fig2_inner_tail.png", dpi=600)
