@@ -131,147 +131,147 @@ Consider a well-documented observation of a strongly turbulent, retreating recon
 
 \begin{figure}
 \centering
-\noindent\includegraphics[width=\textwidth]{Fig1_inner_tail.pdf}
+\noindent\includegraphics[width=\textwidth]{Fig1_fpi_feeps_combined_example.pdf}
 \caption{
     Example of FPI-FEEPS combined moment calculations for a strong turbulent reconnection event in the magnetotail. (a) Barycentric magnetic field. (b) Barycentric electric field. The rest of the panels show data from MMS1. (c) Ion velocity. (d) Combined omni-directional ion \change{number}{energy} flux. (e) Combined omni-directional electron \change{number}{energy} flux. (f) Combined ion (red) and electron (blue) density. (g) Combined ion and electron total pressure. (h) Pressure contribution of non-thermal, energetic (larger than FPI energy threshold) particles. In (a-h), the blue, green, red vertical lines are times before, during, and after the turbulent event. (i) The ion \change{number}{energy} flux during vertical snapshots in (a-h). (j) Similarly, snapshots in electron \change{number}{energy} flux. \add{Hollow markers are noise-level or background measurements.} The dashed magenta lines [horizontal in (d) \& (e), vertical in (i) \& (j)] denote the extrapolated energy gap between FPI and FEEPS. There are 5 extrapolated points in that gap.
 }
 \label{fig:motivating_event}
 \end{figure}
 
-%From past statistical studies \cite{Huang2020,Chong2022}, it is reasonable to assume that the plasma bulk flow rarely surpasses FPI capabilities (about 2,000\,\si{km/s} for ions and 100,000\,\si{km/s} for electrons). So the contribution from thermal (low-energy) particles to the plasma moments can be calculated from the FPI 3D distribution functions, correctly accounting for drifted particles. Subsequently, the non-thermal contribution may be considered isotropic and calculated from omni-directional distribution functions as detailed in \ref{appendix:combined_plasma_moments}. However, this calculation is limited to directionless quantities, such as the number density and scalar pressure. Most clearly seen in (i--j), the energy-coverage gap (between the dashed lines) may contain a significant contribution to the plasma moments. Thus, we extrapolate the distribution function in this gap from FPI and FEEPS measurements and include its contribution in the non-thermal moment calculations (see \ref{appendix:combined_plasma_moments}). In (f--h), we show the total (thermal + non-thermal) number density, total pressure, and non-thermal pressure.
-%
-%In this event, one significant feature emphasized by the Ergun et al studies is that the reconnection inflow does not resupply particles from the lobe as fast as plasma sheet particles are depleted by the outflow, which results in a density drop in the turbulent region in (f) and the depletion of low-energy particles in (i--j). What we emphasize here is that because of this depletion of low-energy particles, when comparing (g) and (h), the contribution of non-thermal and/or energetic ions to the total pressure (characteristic energy density ${P_s=nk_BT_s}$ of species $s$) is on the order of 10\,\% and can be as high as 50\,\%. While most electrons are within the thermal (FPI) energy range, there can also be a significant fraction of non-thermal electrons ($\sim$ 10--20\,\% of total electron pressure) in this type of events. Since the frequency of events similar to the one shown in \cref{fig:motivating_event} is not yet established, pressure and temperature calculations solely based on the FPI instrument in the magnetotail may be underestimated for these occurrences. Therefore, it may be crucial for statistical studies of particle energization in the magnetotail to consider plasma moments combined from both FPI and FEEPS.
-%
-%The calculation of combined plasma moments above requires that there is simultaneous availability from both particle instruments. We also require that electromagnetic field observations (from FGM and EDP) are available to enable future statistical studies of the correlation between field and particle observations. Such a study will be able to establish the statistical occurrence between turbulence, reconnection, and particle energization events such as the example in \cref{fig:motivating_event}.
-%
-%For this study, we have compiled continuous intervals (no significant time gap; duration from minutes to hours) of good availability from the magnetic field, electric field, low-energy plasma, and energetic particle instruments during MMS magnetotail seasons from 2017 to 2020. Additionally, 1-minute averaged solar wind conditions are obtained from the OMNI dataset \cite{King2005}, which is used to correlate the magnetotail dynamics with solar wind conditions. In total, there are 437,728,300 field (FGM resolution) and 6,078,827 particle (FPI resolution) data points, amounting to about 316 continuous days of observation. Details of compilation of these intervals are highly technical and are laid out in the Supporting Information (SI). The principal conditions are listed below.
-%\begin{enumerate}
-%    \item ${X<0}$
-%    \item ${R\geq 12R_E}$
-%    \item ${Q\geq0.75}$
-%    \item No periods of thruster firing, EDP probe saturation, shadow spikes, or bad bias settings.
-%    \item FGM, EDP available from MMS(1--4).
-%    \item FPI, FEEPS available from MMS1.
-%    \item Interval at least 1-minute long.
-%\end{enumerate}
-%Above, ${\vb{R}=(X,Y,Z)}$ is the spacecraft position in GSM. While most global models of the neutral sheet, one of which is later on analyzed and compared, are fitted in aberrated GSM (AGSM), we have found little difference between GSM and AGSM in our results. Thus, we retain the usage of GSM for all coordinates in subsequent sections. Conditions (3) and (5) ensures that the barycentric electromagnetic fields and the curlometer current density may be accurately estimated. (4) ensures intervals of adequate EDP data for analysis. (6) ensures the partial plasma moments can always be combined. (7) enforces that the intervals are adequately long for spectral analysis.
-%
-%\section{Properties of the magnetotail background plasma conditions}\label{sec:background_parameters}
-%
-%In this section, we first distinguish the inner magnetotail from the solar wind and flank-side boundary layers, the properties of which are outside the scope of the present paper. Then, we present the statistical properties of the inner-magnetotail plasma conditions and compare our results with those in \citeA{Boakes2014}, hereby referred to as B14. Also, as done in B14, threshold conditions for the PS, PSBL, and lobe are derived based on the statistical properties of the plasma.
-%
-%\subsection{Exclusion of solar wind and flank-side boundary layers}\label{sec:define_roi}
-%
-%\begin{figure}
-%\centering
-%%\noindent\includegraphics[width=\textwidth]{resources/figures/tail_roi_gsm.pdf}
-%%\caption{
-%%Spatial distribution in the $X$--$Y$ plane of (a) MMS coverage during tail seasons in 2017--2020, (b) the ion density $n_i$, (c) the electron temperature $T_e$, and (d) standard deviation of the magnetic field $\sigma_B$. The lime curves are a $5^\circ$ (clockwise) tilted magnetopause model \cite{Lin2010} constructed with zero IMF $B_z$ and total solar wind pressure of 5\,\si{nPa} (dashed) and 20\,\si{nPa} (solid). Dashed black lines denote ${\abs{Y}\leq 15\,\si{R_E}}$ and ${\abs{Y}\leq\abs{X}}$. The color scales are chosen to saturate solar wind values to also reveal typical plasma values in the tail.
-%%}
-%\label{fig:tail_roi}
-%\end{figure}
-%
-%\cref{fig:tail_roi} shows the $X$--$Y$ distribution of (a) the coverage of MMS trajectory, (b) the ion density $n_i$, (c) the electron temperature $T_e$, and (d) the standard deviation of the magnetic field $\sigma_B$ (over a 5-s moving window). In the magnetotail, the electron density ($n_e$) measurement is more accurate than $n_i$. However, the reverse is true in the solar wind. Here, we use $n_i$ to reveal the differences between the solar wind and the magnetotail. Later, we use $n_e$ when characterizing the magnetotail. 3D histograms are calculated with ${0.5\,\si{R_E}\times0.5\,\si{R_E}\times0.5\,\si{R_E}}$ cubic bins then averaged over the $Z$ direction, except for (a), which is summed instead. Hereafter, all data (e.g. the magnetic field, electric field, and current density) are averaged over a 5-s moving window and subsequently down-sampled to FPI resolution (4.5\,\si{s}) so that particle and field measurements can be compared. Thus, in (a), each count represents a 5-s observation and the total count in each bin represents the dwell time of MMS spacecrafts. 3D bins that have lower than 100 counts are excluded as they may not be statistically representative.
-%
-%In (a), the dwell time is not uniform. The highly-eccentric orbit has MMS spend more time near the apogee to maximize the chance of observing the diffusion region at reconnection sites \cite{Fuselier2016}. However, bins that have statistically significant counts are distributed over a large and uniform enough area so that the spatial distribution of plasma parameters can be studied. Most notably in (b--d), the solar wind is observed (as saturated colors) at ${\abs{Y}\gtrsim15\,\si{R_E}}$, where averaged values are ${n_i\sim}$ 10--100\,\si{cm\tothe{-3}}, ${\sigma_B\sim}$ 1--5\,\si{nT}, and ${T_e\sim}$ 0.01--0.1\,\si{keV}. In contrast, plasma parameters in the inner magnetotail are generally 1--2 orders of magnitude smaller, where ${n_i\sim}$ 0.1--1\,\si{cm\tothe{-3}}, ${\sigma_B\sim}$ 0.1--0.5\,\si{nT}, and ${T_e\sim}$ 1\,\si{keV}. \change{This figure}{\mbox{\cref{fig:tail_roi}}} shows that in general, background plasma parameters such as the density, temperature, and magnetic field fluctuations are distinctive between the inner and outer magnetotail. Thus, we can use these differences to statistically exclude regions more likely associated with the solar wind or flank-side boundary layers.
-%
-%OMNI solar wind observations during MMS magnetotail seasons indicate average IMF ${B_z\sim0}$ and total pressure ${P_\text{sw}\sim}$ 1--5\,\si{nPa}. We use these parameters to construct an asymmetric magnetopause model \cite{Lin2010}, plotted as dashed (${P_\text{sw}=5\,\si{nPa}}$) and solid (${P_\text{sw}=20\,\si{nPa}}$) lime curves in (b--d). Details about the average OMNI observations and the Lin10 model are provided in \ref{appendix:omni}. The dashed curve agrees well with the change in plasma parameters. Thus, to be conservative when eliminating boundary layers, we define the inner magnetotail as the region bounded by the solid lime curve. In subsequent sections, all statistical results are obtained with data located strictly within this region.
-%
-%For comparison, previous statistical studies have typically constrained the inner magnetotail region either with (i) ${\abs{Y}\leq\abs{X}}$ \cite{Ergun2015} or (ii) with a threshold ${\abs{Y}\leq Y_0}$ \cite{Boakes2014,Chong2022}. These two constraints are plotted as dashed black lines in (b--d). On a closer look, they are all somewhat equivalent conditions. (i) tends to work for smaller radial distances ${R\leq12\,\si{R_E}}$, and (ii) is good for small enough threshold $Y_0$, although the popular choice ${Y_0=15\,\si{R_E}}$ may include some mixed plasma data. 
-%
-%\subsection{Identification of inner tail plasma
-%environments}\label{sec:tail_environments}
-%
-%\begin{figure}
-%\centering
-%%\noindent\includegraphics[width=\textwidth]{resources/figures/compare_B14-revised.pdf}
-%%\caption{
-%%    \change{Statistical distribution}{Occurrence rates} of (a) the parallel current density $J_\|$, (b) the perpendicular current density $J_\perp$\add{ (in the cross-tail direction, ${\hat{\vb{z}}\cross\vb{B}}$)}, (c) the electron density $n_e$, and (d) the equatorial magnetic field $B_{xy}$ in terms of the ion plasma beta $\beta_i$. \add{Solid lines are contours of the colored distributions. In (a) and (b), the overplotted colored dashed lines are contours of the noise estimation of the curlometer current, ${\div{\vb{B}}/\mu_0}$.} In all panels, the vertical dashed line denotes ${\beta_i=0.2}$. In (c), the horizontal dashed line is the FPI 1-count level ${n_e=0.05\,\si{cm\tothe{-3}}}$. In (d), the horizontal dashed line denotes ${B_{xy}=14\,\si{nT}}$. \remove{The current and magnetic field measurements are down-sampled to FPI resolution in this figure.}
-%%}
-%\label{fig:compare_B14}
-%\end{figure}
-%
-%\cref{fig:compare_B14} shows the statistical profile of background plasma parameters in terms of the ion beta ${\beta_i=P_i/(B^2/2\mu_0)}$, where $P_i$ is the ion pressure. For comparison, it is plotted in the same format as Figure 1 in B14. (a) and (b) show the current density components parallel ($J_\|$) and perpendicular ($J_\perp$) to the background magnetic field. (c) shows the electron density $n_e$, and (d) shows the equatorial magnetic field $B_{xy}$. \remove{Similar to \mbox{\cref{fig:tail_roi}(a)}, each count represents a 5-s observation.} \add{Due to the solenoidal condition (\mbox{${\div{\vb{B}}=0}$}), the noise level of the curlometer currents in (a--b) can be estimated as \mbox{${J_\text{noise}=\div{\vb{B}}/\mu_0}$}. In these panels, we have overplotted the contours of \mbox{$J_\text{noise}$} for comparison with the current amplitude. At a given color, currents larger than noise are measured if the solid line is wider than the dashed line.}
-%
-%In general, the features in this plot are consistent with the Cluster study. Most clearly in all panels, there are two distinct populations separated by $\beta_i$. The lobe-like population has low density (${n_e\sim0.01\,\si{cm\tothe{-3}}}$), low beta (${\beta_i\sim0.01}$), and high equatorial magnetic field (${B_{xy}\sim20\,\si{nT}}$). In contrast, the plasma sheet-like population has high density (${n_e\sim0.1\,\si{cm\tothe{-3}}}$), high beta (${\beta_i\sim1}$), and low field (${B_{xy}\sim5\,\si{nT}}$). One note of caution is the region of low electron density. The FPI instrument has a large uncertainty if the electron density is below \mbox{0.05\,\si{cm\tothe{-3}}} [horizontal dashed line in (c)]. \add{However, noise and background in the combined FPI-FEEPS distribution function has been treated carefully in the low-density region such that the accuracy is improved (see \mbox{\ref{appendix:combined_plasma_moments}} for details).} In subsequent sections, the threshold conditions for the plasma sheet are the main subject of study, where the density is typically higher than \change{this}{the FPI} threshold. \remove{While it is possible that there are unusually low-density plasma in the PS, such as a few data points during the turbulent event in \mbox{\cref{fig:motivating_event}}, the occurrence is brief and does not significantly alter the results of a large statistical study.}
-%
-%\begin{table}
-%\caption{Threshold conditions distinguishing tail plasma environments derived from \cref{fig:compare_B14}.}
-%\label{tab:threshold_conditions}
-%\centering
-%\begin{tabular}{l c}
-%\hline
-% Plasma environment             & Condition  \\
-%\hline
-%  Lobe                          & ${\beta_i<0.2}$  \\
-%  Plasma sheet                  & ${\beta_i\geq0.2}$ \& ${B_{xy}\leq14\,\si{nT}}$  \\
-%  Plasma sheet boundary layer   & ${\beta_i\geq0.2}$ \& ${B_{xy}>14\,\si{nT}}$  \\
-%\hline
-%\end{tabular}
-%\end{table}
-%
-%To systematically determine the thresholds, B14 used changes in the current and electron densities with respect to $\beta_i$ to define the PS/lobe separation and similarly, the statistical spread in $B_{xy}$ to distinguish between the PSBL and the outer/inner regions of the plasma sheet. The threshold conditions were then reported annually. However, we deem it unnecessary for that level of detail in this study. It suffices to define by visual inspection the threshold conditions as tabulated in \cref{tab:threshold_conditions} and annotated in \cref{fig:compare_B14}. We also make no attempt to distinguish the inner PS from the outer PS as done in B14. In general, our thresholds are all consistent with averages from the yearly results in B14. The beta threshold is slightly higher (by a factor of 2), most probably due to the usage of combined plasma moments (only partial moments with energies $\lesssim$ 40\,\si{keV} were used in the B14 study).
-%
-%\begin{figure}
-%\centering
-%%\noindent\includegraphics[width=\textwidth]{resources/figures/J_slices.pdf}
-%%\caption{
-%%    Vertical cuts of the statistical distribution of the currents in \cref{fig:compare_B14}(a--b) at ${\beta_i=10^{-2}}$ (in black) and ${\beta_i=2}$ (in red). The corresponding dashed lines with the same colors are the noise estimation $J_\text{noise}$. The shaded areas are those where more occurrence is observed at a given amplitude than the noise estimation. The probability of these observations based on the shown conditional distribution functions (on $\beta_i$) is provided in the legends (shaded area versus total area under the solid lines).
-%%}
-%\label{fig:J_slices}
-%\end{figure}
-%
-%\change{
-%    A significant difference between our results and the B14 results is the current density. In (a) and (b), stronger currents $\sim$ \mbox{1.5--5\,\si{nA/m\tothe{2}}} are observed, while the current amplitude in B14 is $\sim$ \mbox{0.5--2\,\si{nA/m\tothe{2}}}. While B14 only observed noise-level lobe currents $\sim$ \mbox{0.1\,\si{nA/m\tothe{2}}}, this study reveals significant lobe currents with amplitude comparable to those in the PS and PSBL. Additionally, the parallel component in (a) averages to zero, indicating that the current frequently propagates obliquely with respect to the background magnetic field in both the lobe and PS. This also shows that the plasma is often frozen into the magnetic field.
-%}{
-%    In (a) and (b), the average current amplitude in the PS is consistent with results in B14 (\mbox{0.5--2\,\si{nA/m\tothe{2}}}). However, a difference among our results is in the lobe (low-beta region). B14 only observed noise in this region (\mbox{$J\sim0.5\,\si{nA/m\tothe{2}}$}). But the wider (green/blue) contours than \mbox{${J_\text{noise}}$} show that there are detections of statistically significant lobe currents above the noise level. To better visualize this difference, \mbox{\cref{fig:J_slices}} shows vertical cuts of these panels at \mbox{$\beta_i=10^{-2}$} (black) and \mbox{$\beta_i=2$} (red). The occurrence rate of high-beta currents is higher than those with low \mbox{$\beta_i$}. The shaded regions indicate that there are ``wings'' in the probability distribution functions (PDFs) that is more significant than the statistics of noise (dashed lines). At any occurrence rate below \mbox{$2\times10^{-3}\,\%$} for low $\beta_i$, the detected current amplitudes are higher than the estimated noise, which means wider contours in \mbox{\cref{fig:compare_B14}}. Finally, to show the partition between noise-level currents (in the ``core'' of the PDFs) and non-noise currents (in the wings), we calculate the probability of the latter (see the figure legends) and discover that at least half of the observations are not noise. That said, the low overall occurrence rate indicates that their detection is not common.
-%}
-%
-%\remove{An explanation for the discrepancy in current amplitude lies in the average spacecraft separation. }In the magnetotail, the typical Cluster spacecraft separation is 1000s of \si{km} \cite{Escoubet2001}, which is comparable to the average ion inertial length. About ${\sqrt{m_i/m_e}\sim40}$ times smaller, the typical electron inertial length is ${\sim20\,\si{km}}$. Since the target of MMS is electron physics, 97\,\% of the dataset has spacecraft separation ${\leq70\,\si{km}}$ (not shown). As a result, intense electron-scale currents are resolved in MMS data, but may be underestimated in Cluster data due to the linear spatial interpolation in the curlometer technique \cite{Paschmann1998}. \remove{This can explain the higher average amplitude in MMS observations}. \add{Therefore, we hypothesize that the presence of significant lobe currents in our statistics is due to the smaller spacecraft separation. Future studies are necessary to reveal their origin and properties. }Overall, these results still provide strong support of Cluster observations from the MMS mission, with an improvement on current density measurements.
-%
-%\section{Global structure of the magnetotail plasma sheet}
-%\label{sec:global_structure}
-%
-%In this section, we investigate the three-dimensional global structure of the plasma sheet. As mentioned in \cref{sec:intro}, the magnetotail is influenced by processes such as flapping, twisting, and warping. Therefore, the plasma sheet may be highly deformed on mesoscales. In that case, it is interesting to study the spatial variations of the background plasma conditions, based on which the PS threshold condition is established in \cref{tab:threshold_conditions}. From solar wind observations in \ref{appendix:omni}, the average IMF $B_y$ is around 2\,\si{nT} with near-zero IMF $B_z$, suggesting that the twisting angle should not be significant for radial distances smaller than 30\,\si{R_E} \cite{Tsyganenko2004}, which leaves flapping and warping as the main deforming factors during MMS magnetotail seasons.
-%
-%To investigate the warping of the magnetotail plasma sheet, we consider the Earth's dipole tilt angle $\Psi$ obtained from the MMS Magnetic Ephemerides Coordinates (MEC) dataset generated by \citeA{Henderson2018}. In GSM coordinates, $\Psi$, constrained in the $X$--$Z$ plane, is the angle between the Earth's dipole tilt axis and the $Z$ axis, which is positive when the Earth tilts toward the Sun and negative away from the Sun. Due to the daily Earth rotation, $\Psi$ varies almost sinusoidally with an amplitude of about ${10^\circ}$ and a period of about 1 day (not shown). \cref{fig:tilt_distribution} shows the distribution of $\Psi$ with respect to (a) the time of year and (b) the concurrent MMS spacecraft position in $Y$. 
-%
-%\begin{figure}
-%\centering
-%%\noindent\includegraphics[width=\textwidth]{resources/figures/dipole_tilt_distribution.pdf}
-%%\caption{
-%%Distribution of the dipole tilt angle $\Psi$ (a) in time and (b) in $Y$. The average $\Psi$ is plotted as the solid white line in (b).
-%%}
-%\label{fig:tilt_distribution}
-%\end{figure}
-%
-%In (a), there are two peaks separated by $\sim20^\circ$ due to the daily variation of $\Psi$ and the seasonal variation of the dipole tilt ($\Psi$ is lower in October). The daily variation is also seen in panel (b). However, (b) also shows that $\Psi$ is lower at higher $Y$. The correlation between $\Psi$ and $Y$ is due to low natural precession of the MMS orbit, which causes MMS to visit the magnetotail only in the summer months. In these seasons, MMS enters the magnetotail from the dawn-side flank (${Y\sim-15\,\si{R_E}}$) around May when $\Psi$ is high and exits to the dusk-side flank (${Y\sim15\,\si{R_E}}$) around October when $\Psi$ is low. The solid white line in (b) shows the average value of $\Psi$ in terms of $Y$, which is around $20^\circ$ in the dawn sector (${Y<0}$) and gradually decreases to zero in the dusk sector (${Y>0}$). The difference in average $\Psi$ between these two sectors can lead to significant variations as a function of $Y$ due to dipole tilt warping effects.
-%
-%Using the same bin size as that in \cref{fig:tail_roi} (0.5\,\si{R_E}),
-%\change{\mbox{\cref{fig:XZ,fig:YZ}} show the spatial variations of several background parameters in both the $X$-$Z$ and $Y$-$Z$ plane (the third dimension is averaged in both cases), thereby providing a 3D picture of these quantities. In \mbox{\cref{fig:XZ}}, we show (a) the ion plasma beta $\beta_i$, (b) the equatorial magnetic field $B_{xy}$, and (c) the normal electric field $E_z$.}{\mbox{\cref{fig:XZ}} shows the ($Y$ averaged) spatial structure of (a) the ion plasma beta $\beta_i$, (b) the equatorial magnetic field $B_{xy}$, and (c) the normal electric field $E_z$. Similarly, \mbox{\cref{fig:YZ}} shows the ($X$ averaged) spatial structure of (a) $B_x$ and (b) $\Psi$. The structures of these parameters altogether provide a 3D picture of the plasma sheet, with the tilt angle $\Psi$ indicating the degree of warping.}
-%
-%In \change{each panel}{\mbox{\cref{fig:XZ}}} from (a) to (c), the bins are marked with a dot if they satisfy the beta condition, the magnetic field condition, and both (the plasma sheet condition in \cref{tab:threshold_conditions}), respectively. The features in this figure correspond one-to-one with those discussed in \cref{tab:threshold_conditions}. First, in \cref{fig:XZ}(a), while constraining $\beta_i$ to high values mostly excludes environments consistent with the lobe, the PSBL and PS can extend widely in $Z$. So the beta condition does not reveal much about the spatial extent. In \cref{fig:XZ}(b), the magnetic field condition excludes the PSBL regions, leaving the remaining PS, which is more narrow along ${Z=0}$. In \cref{fig:XZ}(c), the normal electric field $E_z$ that supports the cross-tail drift current ${J_y\propto-E_zB_x}$ also roughly follows this spatial structure. This electric field always points towards the inner PS (negative/positive in the northern/southern lobe) and tends to zero at the NS. This plot shows that the PS threshold condition agrees with the spatial structure of the PS, as drawn out by the normal electric field ($E_z$) and equatorial magnetic field ($B_{xy}$).
-%
-%\begin{figure}
-%\centering
-%%\noindent\includegraphics[width=\textwidth]{resources/figures/XZ_combo_gsm.pdf}
-%%\caption{
-%%Spatial distribution in the $X$--$Z$ plane of (a) $\beta_i$, (b) $B_{xy}$, and (c) $E_z$. In (a), marked bins (those with a circle marker at the center) satisfy the PS beta condition ${\beta_i\geq0.2}$ in \cref{tab:threshold_conditions}. Similarly, the marked bins satisfy the PS field condition ${B_{xy}\leq 14\,\si{nT}}$ in (b). Those in (c) satisfy both, the full PS condition.
-%%}
-%\label{fig:XZ}
-%\end{figure}
-%
-%The spatial extent of $E_z$ in the $Z$ direction seemingly flares up to $\sim$ 8--10\,\si{R_E} beyond ${\abs{X}\gtrsim20\,\si{R_E}}$, \change{but}{while} at closer distances, its structure is mainly located within 5\,\si{R_E} of the equator. This flaring in the $Z$ direction of the plasma sheet can be explained with variations in the $Y$ direction caused by the dipole tilt. \change{\mbox{\cref{fig:YZ}} shows (a) the magnetospheric $B_x$ component and (b) the dipole tilt angle $\Psi$ in the $Y$-$Z$ plane. The two lobes are clearly distinguishable in (a)}{In \mbox{\cref{fig:YZ}(a)}, the two lobes are clearly distinguishable}, with ${B_x>0}$ indicating the northern hemisphere and ${B_x<0}$ indicating the southern hemisphere. The null point ${B_x\sim0}$ is the location of the neutral sheet. In (b), the distribution of $\Psi$ also reflects the aforementioned dawn-dusk asymmetry in \mbox{\cref{fig:tilt_distribution}}, where $\Psi$ varies between 10$^\circ$ and 30$^\circ$ in the dawn sector ($Y<0$) and between -10$^\circ$ and 10$^\circ$ in the dusk sector ($Y>0$).
-%
-%\begin{figure}
-%\centering
-%%\noindent\includegraphics[width=\textwidth]{resources/figures/YZ_combo_gsm.pdf}
-%%\caption{
-%%Spatial distribution in the $Y$--$Z$ plane of (a) $B_x$ and (b) the dipole tilt angle $\Psi$. The solid lime line in (a) is a global tail neutral sheet model \cite{Xiao2016} dependent on $\Psi$ and the average solar wind pressure $P_\text{sw}=2\,\si{nPa}$. Similar to \cref{fig:XZ}(c), the marked bins satisfy the plasma sheet condition  (plotted in the same format).
-%%}
-%\label{fig:YZ}
-%\end{figure}
-%
+From past statistical studies \cite{Huang2020,Chong2022}, it is reasonable to assume that the plasma bulk flow rarely surpasses FPI capabilities (about 2,000\,\si{km/s} for ions and 100,000\,\si{km/s} for electrons). So the contribution from thermal (low-energy) particles to the plasma moments can be calculated from the FPI 3D distribution functions, correctly accounting for drifted particles. Subsequently, the non-thermal contribution may be considered isotropic and calculated from omni-directional distribution functions as detailed in \ref{appendix:combined_plasma_moments}. However, this calculation is limited to directionless quantities, such as the number density and scalar pressure. Most clearly seen in (i--j), the energy-coverage gap (between the dashed lines) may contain a significant contribution to the plasma moments. Thus, we extrapolate the distribution function in this gap from FPI and FEEPS measurements and include its contribution in the non-thermal moment calculations (see \ref{appendix:combined_plasma_moments}). In (f--h), we show the total (thermal + non-thermal) number density, total pressure, and non-thermal pressure.
+
+In this event, one significant feature emphasized by the Ergun et al studies is that the reconnection inflow does not resupply particles from the lobe as fast as plasma sheet particles are depleted by the outflow, which results in a density drop in the turbulent region in (f) and the depletion of low-energy particles in (i--j). What we emphasize here is that because of this depletion of low-energy particles, when comparing (g) and (h), the contribution of non-thermal and/or energetic ions to the total pressure (characteristic energy density ${P_s=nk_BT_s}$ of species $s$) is on the order of 10\,\% and can be as high as 50\,\%. While most electrons are within the thermal (FPI) energy range, there can also be a significant fraction of non-thermal electrons ($\sim$ 10--20\,\% of total electron pressure) in this type of events. Since the frequency of events similar to the one shown in \cref{fig:motivating_event} is not yet established, pressure and temperature calculations solely based on the FPI instrument in the magnetotail may be underestimated for these occurrences. Therefore, it may be crucial for statistical studies of particle energization in the magnetotail to consider plasma moments combined from both FPI and FEEPS.
+
+The calculation of combined plasma moments above requires that there is simultaneous availability from both particle instruments. We also require that electromagnetic field observations (from FGM and EDP) are available to enable future statistical studies of the correlation between field and particle observations. Such a study will be able to establish the statistical occurrence between turbulence, reconnection, and particle energization events such as the example in \cref{fig:motivating_event}.
+
+For this study, we have compiled continuous intervals (no significant time gap; duration from minutes to hours) of good availability from the magnetic field, electric field, low-energy plasma, and energetic particle instruments during MMS magnetotail seasons from 2017 to 2020. Additionally, 1-minute averaged solar wind conditions are obtained from the OMNI dataset \cite{King2005}, which is used to correlate the magnetotail dynamics with solar wind conditions. In total, there are 437,728,300 field (FGM resolution) and 6,078,827 particle (FPI resolution) data points, amounting to about 316 continuous days of observation. Details of compilation of these intervals are highly technical and are laid out in the Supporting Information (SI). The principal conditions are listed below.
+\begin{enumerate}
+    \item ${X<0}$
+    \item ${R\geq 12R_E}$
+    \item ${Q\geq0.75}$
+    \item No periods of thruster firing, EDP probe saturation, shadow spikes, or bad bias settings.
+    \item FGM, EDP available from MMS(1--4).
+    \item FPI, FEEPS available from MMS1.
+    \item Interval at least 1-minute long.
+\end{enumerate}
+Above, ${\vb{R}=(X,Y,Z)}$ is the spacecraft position in GSM. While most global models of the neutral sheet, one of which is later on analyzed and compared, are fitted in aberrated GSM (AGSM), we have found little difference between GSM and AGSM in our results. Thus, we retain the usage of GSM for all coordinates in subsequent sections. Conditions (3) and (5) ensures that the barycentric electromagnetic fields and the curlometer current density may be accurately estimated. (4) ensures intervals of adequate EDP data for analysis. (6) ensures the partial plasma moments can always be combined. (7) enforces that the intervals are adequately long for spectral analysis.
+
+\section{Properties of the magnetotail background plasma conditions}\label{sec:background_parameters}
+
+In this section, we first distinguish the inner magnetotail from the solar wind and flank-side boundary layers, the properties of which are outside the scope of the present paper. Then, we present the statistical properties of the inner-magnetotail plasma conditions and compare our results with those in \citeA{Boakes2014}, hereby referred to as B14. Also, as done in B14, threshold conditions for the PS, PSBL, and lobe are derived based on the statistical properties of the plasma.
+
+\subsection{Exclusion of solar wind and flank-side boundary layers}\label{sec:define_roi}
+
+\begin{figure}
+\centering
+\noindent\includegraphics[width=\textwidth]{Fig2_inner_tail.pdf}
+\caption{
+Spatial distribution in the $X$--$Y$ plane of (a) MMS coverage during tail seasons in 2017--2020, (b) the ion density $n_i$, (c) the electron temperature $T_e$, and (d) standard deviation of the magnetic field $\sigma_B$. The lime curves are a $5^\circ$ (clockwise) tilted magnetopause model \cite{Lin2010} constructed with zero IMF $B_z$ and total solar wind pressure of 5\,\si{nPa} (dashed) and 20\,\si{nPa} (solid). Dashed black lines denote ${\abs{Y}\leq 15\,\si{R_E}}$ and ${\abs{Y}\leq\abs{X}}$. The color scales are chosen to saturate solar wind values to also reveal typical plasma values in the tail.
+}
+\label{fig:tail_roi}
+\end{figure}
+
+\cref{fig:tail_roi} shows the $X$--$Y$ distribution of (a) the coverage of MMS trajectory, (b) the ion density $n_i$, (c) the electron temperature $T_e$, and (d) the standard deviation of the magnetic field $\sigma_B$ (over a 5-s moving window). In the magnetotail, the electron density ($n_e$) measurement is more accurate than $n_i$. However, the reverse is true in the solar wind. Here, we use $n_i$ to reveal the differences between the solar wind and the magnetotail. Later, we use $n_e$ when characterizing the magnetotail. 3D histograms are calculated with ${0.5\,\si{R_E}\times0.5\,\si{R_E}\times0.5\,\si{R_E}}$ cubic bins then averaged over the $Z$ direction, except for (a), which is summed instead. Hereafter, all data (e.g. the magnetic field, electric field, and current density) are averaged over a 5-s moving window and subsequently down-sampled to FPI resolution (4.5\,\si{s}) so that particle and field measurements can be compared. Thus, in (a), each count represents a 5-s observation and the total count in each bin represents the dwell time of MMS spacecrafts. 3D bins that have lower than 100 counts are excluded as they may not be statistically representative.
+
+In (a), the dwell time is not uniform. The highly-eccentric orbit has MMS spend more time near the apogee to maximize the chance of observing the diffusion region at reconnection sites \cite{Fuselier2016}. However, bins that have statistically significant counts are distributed over a large and uniform enough area so that the spatial distribution of plasma parameters can be studied. Most notably in (b--d), the solar wind is observed (as saturated colors) at ${\abs{Y}\gtrsim15\,\si{R_E}}$, where averaged values are ${n_i\sim}$ 10--100\,\si{cm\tothe{-3}}, ${\sigma_B\sim}$ 1--5\,\si{nT}, and ${T_e\sim}$ 0.01--0.1\,\si{keV}. In contrast, plasma parameters in the inner magnetotail are generally 1--2 orders of magnitude smaller, where ${n_i\sim}$ 0.1--1\,\si{cm\tothe{-3}}, ${\sigma_B\sim}$ 0.1--0.5\,\si{nT}, and ${T_e\sim}$ 1\,\si{keV}. \change{This figure}{\mbox{\cref{fig:tail_roi}}} shows that in general, background plasma parameters such as the density, temperature, and magnetic field fluctuations are distinctive between the inner and outer magnetotail. Thus, we can use these differences to statistically exclude regions more likely associated with the solar wind or flank-side boundary layers.
+
+OMNI solar wind observations during MMS magnetotail seasons indicate average IMF ${B_z\sim0}$ and total pressure ${P_\text{sw}\sim}$ 1--5\,\si{nPa}. We use these parameters to construct an asymmetric magnetopause model \cite{Lin2010}, plotted as dashed (${P_\text{sw}=5\,\si{nPa}}$) and solid (${P_\text{sw}=20\,\si{nPa}}$) lime curves in (b--d). Details about the average OMNI observations and the Lin10 model are provided in \ref{appendix:omni}. The dashed curve agrees well with the change in plasma parameters. Thus, to be conservative when eliminating boundary layers, we define the inner magnetotail as the region bounded by the solid lime curve. In subsequent sections, all statistical results are obtained with data located strictly within this region.
+
+For comparison, previous statistical studies have typically constrained the inner magnetotail region either with (i) ${\abs{Y}\leq\abs{X}}$ \cite{Ergun2015} or (ii) with a threshold ${\abs{Y}\leq Y_0}$ \cite{Boakes2014,Chong2022}. These two constraints are plotted as dashed black lines in (b--d). On a closer look, they are all somewhat equivalent conditions. (i) tends to work for smaller radial distances ${R\leq12\,\si{R_E}}$, and (ii) is good for small enough threshold $Y_0$, although the popular choice ${Y_0=15\,\si{R_E}}$ may include some mixed plasma data. 
+
+\subsection{Identification of inner tail plasma
+environments}\label{sec:tail_environments}
+
+\begin{figure}
+\centering
+\noindent\includegraphics[width=\textwidth]{Fig3_compare_B14.pdf}
+\caption{
+    \change{Statistical distribution}{Occurrence rates} of (a) the parallel current density $J_\|$, (b) the perpendicular current density $J_\perp$\add{ (in the cross-tail direction, ${\hat{\vb{z}}\cross\vb{B}}$)}, (c) the electron density $n_e$, and (d) the equatorial magnetic field $B_{xy}$ in terms of the ion plasma beta $\beta_i$. \add{Solid lines are contours of the colored distributions. In (a) and (b), the overplotted colored dashed lines are contours of the noise estimation of the curlometer current, ${\div{\vb{B}}/\mu_0}$.} In all panels, the vertical dashed line denotes ${\beta_i=0.2}$. In (c), the horizontal dashed line is the FPI 1-count level ${n_e=0.05\,\si{cm\tothe{-3}}}$. In (d), the horizontal dashed line denotes ${B_{xy}=14\,\si{nT}}$. \remove{The current and magnetic field measurements are down-sampled to FPI resolution in this figure.}
+}
+\label{fig:compare_B14}
+\end{figure}
+
+\cref{fig:compare_B14} shows the statistical profile of background plasma parameters in terms of the ion beta ${\beta_i=P_i/(B^2/2\mu_0)}$, where $P_i$ is the ion pressure. For comparison, it is plotted in the same format as Figure 1 in B14. (a) and (b) show the current density components parallel ($J_\|$) and perpendicular ($J_\perp$) to the background magnetic field. (c) shows the electron density $n_e$, and (d) shows the equatorial magnetic field $B_{xy}$. \remove{Similar to \mbox{\cref{fig:tail_roi}(a)}, each count represents a 5-s observation.} \add{Due to the solenoidal condition (\mbox{${\div{\vb{B}}=0}$}), the noise level of the curlometer currents in (a--b) can be estimated as \mbox{${J_\text{noise}=\div{\vb{B}}/\mu_0}$}. In these panels, we have overplotted the contours of \mbox{$J_\text{noise}$} for comparison with the current amplitude. At a given color, currents larger than noise are measured if the solid line is wider than the dashed line.}
+
+In general, the features in this plot are consistent with the Cluster study. Most clearly in all panels, there are two distinct populations separated by $\beta_i$. The lobe-like population has low density (${n_e\sim0.01\,\si{cm\tothe{-3}}}$), low beta (${\beta_i\sim0.01}$), and high equatorial magnetic field (${B_{xy}\sim20\,\si{nT}}$). In contrast, the plasma sheet-like population has high density (${n_e\sim0.1\,\si{cm\tothe{-3}}}$), high beta (${\beta_i\sim1}$), and low field (${B_{xy}\sim5\,\si{nT}}$). One note of caution is the region of low electron density. The FPI instrument has a large uncertainty if the electron density is below \mbox{0.05\,\si{cm\tothe{-3}}} [horizontal dashed line in (c)]. \add{However, noise and background in the combined FPI-FEEPS distribution function has been treated carefully in the low-density region such that the accuracy is improved (see \mbox{\ref{appendix:combined_plasma_moments}} for details).} In subsequent sections, the threshold conditions for the plasma sheet are the main subject of study, where the density is typically higher than \change{this}{the FPI} threshold. \remove{While it is possible that there are unusually low-density plasma in the PS, such as a few data points during the turbulent event in \mbox{\cref{fig:motivating_event}}, the occurrence is brief and does not significantly alter the results of a large statistical study.}
+
+\begin{table}
+\caption{Threshold conditions distinguishing tail plasma environments derived from \cref{fig:compare_B14}.}
+\label{tab:threshold_conditions}
+\centering
+\begin{tabular}{l c}
+\hline
+ Plasma environment             & Condition  \\
+\hline
+  Lobe                          & ${\beta_i<0.2}$  \\
+  Plasma sheet                  & ${\beta_i\geq0.2}$ \& ${B_{xy}\leq14\,\si{nT}}$  \\
+  Plasma sheet boundary layer   & ${\beta_i\geq0.2}$ \& ${B_{xy}>14\,\si{nT}}$  \\
+\hline
+\end{tabular}
+\end{table}
+
+To systematically determine the thresholds, B14 used changes in the current and electron densities with respect to $\beta_i$ to define the PS/lobe separation and similarly, the statistical spread in $B_{xy}$ to distinguish between the PSBL and the outer/inner regions of the plasma sheet. The threshold conditions were then reported annually. However, we deem it unnecessary for that level of detail in this study. It suffices to define by visual inspection the threshold conditions as tabulated in \cref{tab:threshold_conditions} and annotated in \cref{fig:compare_B14}. We also make no attempt to distinguish the inner PS from the outer PS as done in B14. In general, our thresholds are all consistent with averages from the yearly results in B14. The beta threshold is slightly higher (by a factor of 2), most probably due to the usage of combined plasma moments (only partial moments with energies $\lesssim$ 40\,\si{keV} were used in the B14 study).
+
+\begin{figure}
+\centering
+\noindent\includegraphics[width=\textwidth]{Fig4_J_slices.pdf}
+\caption{
+    Vertical cuts of the statistical distribution of the currents in \cref{fig:compare_B14}(a--b) at ${\beta_i=10^{-2}}$ (in black) and ${\beta_i=2}$ (in red). The corresponding dashed lines with the same colors are the noise estimation $J_\text{noise}$. The shaded areas are those where more occurrence is observed at a given amplitude than the noise estimation. The probability of these observations based on the shown conditional distribution functions (on $\beta_i$) is provided in the legends (shaded area versus total area under the solid lines).
+}
+\label{fig:J_slices}
+\end{figure}
+
+\change{
+    A significant difference between our results and the B14 results is the current density. In (a) and (b), stronger currents $\sim$ \mbox{1.5--5\,\si{nA/m\tothe{2}}} are observed, while the current amplitude in B14 is $\sim$ \mbox{0.5--2\,\si{nA/m\tothe{2}}}. While B14 only observed noise-level lobe currents $\sim$ \mbox{0.1\,\si{nA/m\tothe{2}}}, this study reveals significant lobe currents with amplitude comparable to those in the PS and PSBL. Additionally, the parallel component in (a) averages to zero, indicating that the current frequently propagates obliquely with respect to the background magnetic field in both the lobe and PS. This also shows that the plasma is often frozen into the magnetic field.
+}{
+    In (a) and (b), the average current amplitude in the PS is consistent with results in B14 (\mbox{0.5--2\,\si{nA/m\tothe{2}}}). However, a difference among our results is in the lobe (low-beta region). B14 only observed noise in this region (\mbox{$J\sim0.5\,\si{nA/m\tothe{2}}$}). But the wider (green/blue) contours than \mbox{${J_\text{noise}}$} show that there are detections of statistically significant lobe currents above the noise level. To better visualize this difference, \mbox{\cref{fig:J_slices}} shows vertical cuts of these panels at \mbox{$\beta_i=10^{-2}$} (black) and \mbox{$\beta_i=2$} (red). The occurrence rate of high-beta currents is higher than those with low \mbox{$\beta_i$}. The shaded regions indicate that there are ``wings'' in the probability distribution functions (PDFs) that is more significant than the statistics of noise (dashed lines). At any occurrence rate below \mbox{$2\times10^{-3}\,\%$} for low $\beta_i$, the detected current amplitudes are higher than the estimated noise, which means wider contours in \mbox{\cref{fig:compare_B14}}. Finally, to show the partition between noise-level currents (in the ``core'' of the PDFs) and non-noise currents (in the wings), we calculate the probability of the latter (see the figure legends) and discover that at least half of the observations are not noise. That said, the low overall occurrence rate indicates that their detection is not common.
+}
+
+\remove{An explanation for the discrepancy in current amplitude lies in the average spacecraft separation. }In the magnetotail, the typical Cluster spacecraft separation is 1000s of \si{km} \cite{Escoubet2001}, which is comparable to the average ion inertial length. About ${\sqrt{m_i/m_e}\sim40}$ times smaller, the typical electron inertial length is ${\sim20\,\si{km}}$. Since the target of MMS is electron physics, 97\,\% of the dataset has spacecraft separation ${\leq70\,\si{km}}$ (not shown). As a result, intense electron-scale currents are resolved in MMS data, but may be underestimated in Cluster data due to the linear spatial interpolation in the curlometer technique \cite{Paschmann1998}. \remove{This can explain the higher average amplitude in MMS observations}. \add{Therefore, we hypothesize that the presence of significant lobe currents in our statistics is due to the smaller spacecraft separation. Future studies are necessary to reveal their origin and properties. }Overall, these results still provide strong support of Cluster observations from the MMS mission, with an improvement on current density measurements.
+
+\section{Global structure of the magnetotail plasma sheet}
+\label{sec:global_structure}
+
+In this section, we investigate the three-dimensional global structure of the plasma sheet. As mentioned in \cref{sec:intro}, the magnetotail is influenced by processes such as flapping, twisting, and warping. Therefore, the plasma sheet may be highly deformed on mesoscales. In that case, it is interesting to study the spatial variations of the background plasma conditions, based on which the PS threshold condition is established in \cref{tab:threshold_conditions}. From solar wind observations in \ref{appendix:omni}, the average IMF $B_y$ is around 2\,\si{nT} with near-zero IMF $B_z$, suggesting that the twisting angle should not be significant for radial distances smaller than 30\,\si{R_E} \cite{Tsyganenko2004}, which leaves flapping and warping as the main deforming factors during MMS magnetotail seasons.
+
+To investigate the warping of the magnetotail plasma sheet, we consider the Earth's dipole tilt angle $\Psi$ obtained from the MMS Magnetic Ephemerides Coordinates (MEC) dataset generated by \citeA{Henderson2018}. In GSM coordinates, $\Psi$, constrained in the $X$--$Z$ plane, is the angle between the Earth's dipole tilt axis and the $Z$ axis, which is positive when the Earth tilts toward the Sun and negative away from the Sun. Due to the daily Earth rotation, $\Psi$ varies almost sinusoidally with an amplitude of about ${10^\circ}$ and a period of about 1 day (not shown). \cref{fig:tilt_distribution} shows the distribution of $\Psi$ with respect to (a) the time of year and (b) the concurrent MMS spacecraft position in $Y$. 
+
+\begin{figure}
+\centering
+\noindent\includegraphics[width=\textwidth]{Fig5_dipole_tilt.pdf}
+\caption{
+Distribution of the dipole tilt angle $\Psi$ (a) in time and (b) in $Y$. The average $\Psi$ is plotted as the solid white line in (b).
+}
+\label{fig:tilt_distribution}
+\end{figure}
+
+In (a), there are two peaks separated by $\sim20^\circ$ due to the daily variation of $\Psi$ and the seasonal variation of the dipole tilt ($\Psi$ is lower in October). The daily variation is also seen in panel (b). However, (b) also shows that $\Psi$ is lower at higher $Y$. The correlation between $\Psi$ and $Y$ is due to low natural precession of the MMS orbit, which causes MMS to visit the magnetotail only in the summer months. In these seasons, MMS enters the magnetotail from the dawn-side flank (${Y\sim-15\,\si{R_E}}$) around May when $\Psi$ is high and exits to the dusk-side flank (${Y\sim15\,\si{R_E}}$) around October when $\Psi$ is low. The solid white line in (b) shows the average value of $\Psi$ in terms of $Y$, which is around $20^\circ$ in the dawn sector (${Y<0}$) and gradually decreases to zero in the dusk sector (${Y>0}$). The difference in average $\Psi$ between these two sectors can lead to significant variations as a function of $Y$ due to dipole tilt warping effects.
+
+Using the same bin size as that in \cref{fig:tail_roi} (0.5\,\si{R_E}),
+\change{\mbox{\cref{fig:XZ,fig:YZ}} show the spatial variations of several background parameters in both the $X$-$Z$ and $Y$-$Z$ plane (the third dimension is averaged in both cases), thereby providing a 3D picture of these quantities. In \mbox{\cref{fig:XZ}}, we show (a) the ion plasma beta $\beta_i$, (b) the equatorial magnetic field $B_{xy}$, and (c) the normal electric field $E_z$.}{\mbox{\cref{fig:XZ}} shows the ($Y$ averaged) spatial structure of (a) the ion plasma beta $\beta_i$, (b) the equatorial magnetic field $B_{xy}$, and (c) the normal electric field $E_z$. Similarly, \mbox{\cref{fig:YZ}} shows the ($X$ averaged) spatial structure of (a) $B_x$ and (b) $\Psi$. The structures of these parameters altogether provide a 3D picture of the plasma sheet, with the tilt angle $\Psi$ indicating the degree of warping.}
+
+In \change{each panel}{\mbox{\cref{fig:XZ}}} from (a) to (c), the bins are marked with a dot if they satisfy the beta condition, the magnetic field condition, and both (the plasma sheet condition in \cref{tab:threshold_conditions}), respectively. The features in this figure correspond one-to-one with those discussed in \cref{tab:threshold_conditions}. First, in \cref{fig:XZ}(a), while constraining $\beta_i$ to high values mostly excludes environments consistent with the lobe, the PSBL and PS can extend widely in $Z$. So the beta condition does not reveal much about the spatial extent. In \cref{fig:XZ}(b), the magnetic field condition excludes the PSBL regions, leaving the remaining PS, which is more narrow along ${Z=0}$. In \cref{fig:XZ}(c), the normal electric field $E_z$ that supports the cross-tail drift current ${J_y\propto-E_zB_x}$ also roughly follows this spatial structure. This electric field always points towards the inner PS (negative/positive in the northern/southern lobe) and tends to zero at the NS. This plot shows that the PS threshold condition agrees with the spatial structure of the PS, as drawn out by the normal electric field ($E_z$) and equatorial magnetic field ($B_{xy}$).
+
+\begin{figure}
+\centering
+\noindent\includegraphics[width=\textwidth]{Fig6_XZ_distribution.pdf}
+\caption{
+Spatial distribution in the $X$--$Z$ plane of (a) $\beta_i$, (b) $B_{xy}$, and (c) $E_z$. In (a), marked bins (those with a circle marker at the center) satisfy the PS beta condition ${\beta_i\geq0.2}$ in \cref{tab:threshold_conditions}. Similarly, the marked bins satisfy the PS field condition ${B_{xy}\leq 14\,\si{nT}}$ in (b). Those in (c) satisfy both, the full PS condition.
+}
+\label{fig:XZ}
+\end{figure}
+
+The spatial extent of $E_z$ in the $Z$ direction seemingly flares up to $\sim$ 8--10\,\si{R_E} beyond ${\abs{X}\gtrsim20\,\si{R_E}}$, \change{but}{while} at closer distances, its structure is mainly located within 5\,\si{R_E} of the equator. This flaring in the $Z$ direction of the plasma sheet can be explained with variations in the $Y$ direction caused by the dipole tilt. \change{\mbox{\cref{fig:YZ}} shows (a) the magnetospheric $B_x$ component and (b) the dipole tilt angle $\Psi$ in the $Y$-$Z$ plane. The two lobes are clearly distinguishable in (a)}{In \mbox{\cref{fig:YZ}(a)}, the two lobes are clearly distinguishable}, with ${B_x>0}$ indicating the northern hemisphere and ${B_x<0}$ indicating the southern hemisphere. The null point ${B_x\sim0}$ is the location of the neutral sheet. In (b), the distribution of $\Psi$ also reflects the aforementioned dawn-dusk asymmetry in \mbox{\cref{fig:tilt_distribution}}, where $\Psi$ varies between 10$^\circ$ and 30$^\circ$ in the dawn sector ($Y<0$) and between -10$^\circ$ and 10$^\circ$ in the dusk sector ($Y>0$).
+
+\begin{figure}
+\centering
+\noindent\includegraphics[width=\textwidth]{Fig7_YZ_distribution.pdf}
+\caption{
+Spatial distribution in the $Y$--$Z$ plane of (a) $B_x$ and (b) the dipole tilt angle $\Psi$. The solid lime line in (a) is a global tail neutral sheet model \cite{Xiao2016} dependent on $\Psi$ and the average solar wind pressure $P_\text{sw}=2\,\si{nPa}$. Similar to \cref{fig:XZ}(c), the marked bins satisfy the plasma sheet condition  (plotted in the same format).
+}
+\label{fig:YZ}
+\end{figure}
+
 %\remove{In the same format as \mbox{\cref{fig:XZ}}, }\change{b}{B}ins marked with a dot in \cref{fig:YZ}(a) indicate the \change{plasma sheet region}{region satisfying the PS condition in \mbox{\cref{tab:threshold_conditions}}}. The reversal of $B_x$ shows that the neutral sheet is located within the marked plasma sheet. The lime curve is a global NS model from \citeA{Xiao2016}, dependent on the dipole tilt angle and the solar wind pressure (see \ref{appendix:omni}). We use the average value of $\Psi$ obtained from \cref{fig:tilt_distribution}(b) (solid white line) for the former, and average OMNI observations ${P_\text{sw}=2\,\si{nPa}}$ for the latter. The small variations in this model are highly dependent on those in $\Psi$, which in turn is affected by the spacecraft apogee. However, its average shows a remarkable agreement with the $B_x$ reversal. 
 %
 %In \cref{fig:YZ}(b), the high values of $\Psi$ in the dawn sector causes the magnetotail to be warped to $\sim$ 2--4\,\si{R_E} in $Z$, while in the dusk sector, there is little warping. The combination of warping in the dusk sector with no warping in the dawn sector contributes to the apparent flaring in $X$--$Z$ seen in \cref{fig:XZ}, as the $Y$ direction is averaged in that figure. The plasma sheet extent around the neutral sheet in \cref{fig:YZ}(a) seems to increase towards the flanks ($\sim$ 2--3\,\si{R_E}). This increase may be explained by kink-like flapping waves that are commonly observed in these regions \cite{Gao2018}. As the magnetic field condition is more strictly constrained to lower threshold, the outer PS is excluded and will result in a spatial distribution that follow the NS more closely.
