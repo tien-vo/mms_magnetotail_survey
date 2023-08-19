@@ -1,7 +1,11 @@
 data/
 __pycache__/
+plots/
+scripts/**/*.png
+*.blg
+*.log
+*.synctex.gz
 *.h5
 log
 tmp
 .install.stamp
-scripts/**/*.png
