@@ -56,5 +56,4 @@ for (i, ax) in enumerate(axes):
     ax.tick_params(which="minor", color="w", labelcolor="k", width=2, length=2)
 
 fig.tight_layout(h_pad=0.01)
-fig.savefig(lib.plot_dir / "Fig5_dipole_tilt.pdf", dpi=600)
-fig.savefig(lib.plot_dir / "Fig5_dipole_tilt.png", dpi=600)
+fig.savefig(lib.plot_dir / "Fig5_dipole_tilt.png", dpi=600, transparent=True)

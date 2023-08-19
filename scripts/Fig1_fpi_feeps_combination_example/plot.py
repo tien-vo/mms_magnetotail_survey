@@ -219,5 +219,4 @@ for (i, ax) in enumerate(vc_axes):
     else:
         ax.set_xlabel(f"Energy ({Wg_ion.unit:latex_inline})", fontsize="small")
 
-fig.savefig(lib.plot_dir / "Fig1_fpi_feeps_combined_example-revised.pdf", dpi=600)
-fig.savefig(lib.plot_dir / "Fig1_fpi_feeps_combined_example-revised.png", dpi=600)
+fig.savefig(lib.plot_dir / "Fig1_fpi_feeps_combined_example.png", dpi=600, transparent=True)
