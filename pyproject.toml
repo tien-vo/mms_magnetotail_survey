@@ -1,0 +1,26 @@
+[tool.poetry]
+name = "mms-magnetotail-survey"
+version = "0.2.0"
+description = "Contains Python code for processing MMS data during magnetotail seasons"
+license = "GPL-3.0"
+authors = ["Tien Vo <tien.a.vo@proton.me>"]
+readme = "README.md"
+packages = [{include = "mms_survey", from="src"}]
+
+[tool.poetry.dependencies]
+python = ">=3.11,<3.13"
+xarray = "^2023.8.0"
+zarr = "^2.16.1"
+tqdm = "^4.66.1"
+
+[tool.poetry.group.dev]
+optional = true
+
+[tool.poetry.group.dev.dependencies]
+black = "^23.7.0"
+isort = "^5.12.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
