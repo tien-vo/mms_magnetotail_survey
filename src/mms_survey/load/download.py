@@ -9,8 +9,8 @@ from .base import server
 
 
 def download_file(remote_file_name: str):
+    url = f"{server}/download/science?file={remote_file_name}"
     with NamedTemporaryFile(delete=False, mode="wb") as temp_file:
-        url = f"{server}/download/science?file={remote_file_name}"
         urllib.request.urlretrieve(url, file_name := temp_file.name)
 
     return file_name

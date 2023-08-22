@@ -33,8 +33,9 @@ class BaseDownload(ABC):
         self.data_type = data_type
         self.data_level = data_level
 
+    @staticmethod
     @abstractmethod
-    def process(self, file: str):
+    def process(file: str):
         raise NotImplementedError()
 
     def download(self, parallel=True, dry_run=False):
@@ -43,9 +44,10 @@ class BaseDownload(ABC):
             return
 
         pool = Pool() if parallel else Pool(1)
-        with tqdm(total=len(files)) as process_bar:
-            for _ in pool.uimap(self.process, files):
-                process_bar.update()
+        with tqdm(total=len(files)) as progress_bar:
+            for msg in pool.uimap(self.process, files):
+                progress_bar.write(msg)
+                progress_bar.update()
 
         pool.close()
 

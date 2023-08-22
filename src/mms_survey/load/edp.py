@@ -32,20 +32,22 @@ class DownloadEDP(BaseDownload):
             data_level=data_level,
         )
 
-    def process(self, file: str):
+    @staticmethod
+    def process(file: str):
         temp_file = download_file(file)
-        pfx = f"{self.probe}_edp"
-        sfx = f"{self.data_rate}_{self.data_level}"
 
         ds = cdf_to_xarray(temp_file, to_datetime=True, fillval_to_nan=True)
+        file_name = ds.attrs["Logical_file_id"][0]
+        (
+            probe, instrument, data_rate, data_level, data_type, trange_id, _
+        ) = file_name.split("_")
+        pfx = f"{probe}_{instrument}"
+        sfx = f"{data_rate}_{data_level}"
         for key in ["units", "UNITS", "FILLVAL", "VALIDMAX", "VALIDMIN"]:
             if key in ds[f"{pfx}_epoch_{sfx}"].attrs:
                 del ds[f"{pfx}_epoch_{sfx}"].attrs[key]
 
-        # Split dataset into ephemeris and field data
-        trange_id = ds.attrs["Logical_file_id"][0].split("_")[-2]
-
-        if self.data_type == "dce":
+        if data_type == "dce":
             vars = {
                 f"{pfx}_{var}_{sfx}": var for var in [
                     "dce_gse",
@@ -61,7 +63,7 @@ class DownloadEDP(BaseDownload):
                     "deltap",
                 ]
             }
-        elif self.data_type == "scpot":
+        elif data_type == "scpot":
             vars = {
                 f"{pfx}_{var}_{sfx}": var for var in [
                     "scpot",
@@ -75,14 +77,12 @@ class DownloadEDP(BaseDownload):
         ds = ds[vars.keys()].rename({f"{pfx}_epoch_{sfx}": "time", **vars})
         ds.to_zarr(
             store=zarr_store,
-            group=(
-                f"/{self.probe}/edp-{self.data_type}/"
-                f"{self.data_rate}/{trange_id}"
-            ),
+            group=f"/{probe}/{instrument}-{data_type}/{data_rate}/{trange_id}",
             mode="w",
         )
 
         os.unlink(temp_file)
+        return f"Processed {file_name}"
 
 
 if __name__ == "__main__":
