@@ -38,20 +38,18 @@ class BaseDownload(ABC):
     def process(file: str):
         raise NotImplementedError()
 
-    def download(self, parallel=True, dry_run=False):
-        files = self.get_remote_files()
+    def download(self, parallel=True, dry_run=False, check_size=False):
+        files = self.get_remote_files(check_size)
         if dry_run:
             return
 
-        pool = Pool() if parallel else Pool(1)
-        with tqdm(total=len(files)) as progress_bar:
-            for msg in pool.uimap(self.process, files):
-                progress_bar.write(msg)
-                progress_bar.update()
+        with Pool(8 if parallel else 1) as pool:
+            with tqdm(total=len(files)) as progress_bar:
+                for msg in pool.uimap(self.process, files):
+                    progress_bar.write(msg)
+                    progress_bar.update()
 
-        pool.close()
-
-    def get_remote_files(self) -> list:
+    def get_remote_files(self, check_size=False) -> list:
         url = f"{server}/file_info/science?{self._query_string}"
         response = requests.get(url)
         assert response.ok, "Query error!"
@@ -64,7 +62,8 @@ class BaseDownload(ABC):
             f"{self._id}: Query found {len(files)} files with total size = "
             f"{BYTE_TO_GIGABYTE * download_size:.4f} GB"
         )
-        assert download_size < 0.95 * free_disk_space, "Download size too large"
+        if check_size:
+            assert download_size < 0.95 * free_disk_space, "Download size too large"
 
         return remote_file_names
 

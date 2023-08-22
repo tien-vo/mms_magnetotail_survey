@@ -35,6 +35,8 @@ class DownloadEDP(BaseDownload):
     @staticmethod
     def process(file: str):
         temp_file = download_file(file)
+        if temp_file is None:
+            return f"Issue processing {file}. File was not processed"
 
         ds = cdf_to_xarray(temp_file, to_datetime=True, fillval_to_nan=True)
         file_name = ds.attrs["Logical_file_id"][0]
@@ -51,26 +53,13 @@ class DownloadEDP(BaseDownload):
             vars = {
                 f"{pfx}_{var}_{sfx}": var for var in [
                     "dce_gse",
-                    "dce_dsl",
                     "dce_par_epar",
                     "dce_err",
-                    "dce_dsl_res",
-                    "dce_dsl_offset",
-                    "dce_gain",
-                    "dce_dsl_base",
                     "bitmask",
-                    "quality",
-                    "deltap",
                 ]
             }
         elif data_type == "scpot":
-            vars = {
-                f"{pfx}_{var}_{sfx}": var for var in [
-                    "scpot",
-                    "psp",
-                    "dcv",
-                ]
-            }
+            vars = {f"{pfx}_{var}_{sfx}": var for var in ["scpot"]}
         else:
             raise NotImplementedError()
 
@@ -79,9 +68,11 @@ class DownloadEDP(BaseDownload):
             store=zarr_store,
             group=f"/{probe}/{instrument}-{data_type}/{data_rate}/{trange_id}",
             mode="w",
+            consolidated=False,
         )
 
         os.unlink(temp_file)
+
         return f"Processed {file_name}"
 
 

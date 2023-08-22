@@ -2,7 +2,7 @@ __all__ = ["download_file"]
 
 import os
 
-import urllib.request
+import requests
 from tempfile import NamedTemporaryFile
 
 from .base import server
@@ -11,9 +11,15 @@ from .base import server
 def download_file(remote_file_name: str):
     url = f"{server}/download/science?file={remote_file_name}"
     with NamedTemporaryFile(delete=False, mode="wb") as temp_file:
-        urllib.request.urlretrieve(url, file_name := temp_file.name)
+        response = requests.get(url)
+        file_size = int(response.headers.get("content-length"))
+        temp_file.write(response.content)
+        download_size = os.path.getsize(file_name := temp_file.name)
 
-    return file_name
+        if file_size == download_size:
+            return file_name
+        else:
+            return None
 
 
 if __name__ == "__main__":

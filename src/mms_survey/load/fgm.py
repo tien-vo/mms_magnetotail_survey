@@ -33,6 +33,8 @@ class DownloadFGM(BaseDownload):
     @staticmethod
     def process(file: str):
         temp_file = download_file(file)
+        if temp_file is None:
+            return f"Issue processing {file}. File was not processed"
 
         ds = cdf_to_xarray(temp_file, to_datetime=True, fillval_to_nan=True)
         file_name = ds.attrs["Logical_file_id"][0]
@@ -53,9 +55,6 @@ class DownloadFGM(BaseDownload):
                 "b_gse",
                 "b_gsm",
                 "flag",
-                "hirange",
-                "stemp",
-                "etemp",
             ]
         }
         ds_fgm = ds[fgm_vars.keys()].rename(Epoch="time", **fgm_vars)
@@ -63,6 +62,7 @@ class DownloadFGM(BaseDownload):
             store=zarr_store,
             group=f"/{probe}/fgm/{data_rate}/{trange_id}",
             mode="w",
+            consolidated=False,
         )
 
         eph_vars = {
@@ -73,6 +73,7 @@ class DownloadFGM(BaseDownload):
             store=zarr_store,
             group=f"/{probe}/fgm-eph/{data_rate}/{trange_id}",
             mode="w",
+            consolidated=False,
         )
 
         os.unlink(temp_file)
