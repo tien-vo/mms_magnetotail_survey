@@ -1,3 +1,7 @@
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
 [tool.poetry]
 name = "mms-magnetotail-survey"
 version = "0.2.0"
@@ -12,6 +16,12 @@ python = ">=3.11,<3.13"
 xarray = "^2023.8.0"
 zarr = "^2.16.1"
 tqdm = "^4.66.1"
+astropy = "^5.3.2"
+psutil = "^5.9.5"
+pathos = "^0.3.1"
+cdflib = "^1.1.0"
+dask = "^2023.8.1"
+tvolib = "^0.4.0"
 
 [tool.poetry.group.dev]
 optional = true
@@ -21,7 +31,9 @@ black = "^23.7.0"
 isort = "^5.12.0"
 conda-lock = "^2.1.2"
 
+[tool.black]
+line-length = 79
+target-versions = ["py311"]
 
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+[tool.isort]
+profile = "black"
