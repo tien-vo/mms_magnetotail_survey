@@ -1,9 +1,8 @@
-__all__ = ["BaseDownload"]
+__all__ = ["BaseLoader"]
 
 import warnings
 from abc import ABC, abstractmethod
 
-import psutil
 import requests
 import pandas as pd
 from tqdm import tqdm
@@ -13,17 +12,16 @@ BYTE_TO_GIGABYTE = 9.313e-10
 server = "https://lasp.colorado.edu/mms/sdc/public/files/api/v1"
 
 
-class BaseDownload(ABC):
-
+class BaseLoader(ABC):
     def __init__(
         self,
         start_date: str = "2017-07-26",
         end_date: str = "2017-07-26",
-        probe: str | list = "mms1",
-        instrument: str | list = "fgm",
-        data_rate: str | list = "srvy",
+        probe: None | str | list = "mms1",
+        instrument: None | str | list = "fgm",
+        data_rate: None | str | list = "srvy",
         data_type: None | str | list = None,
-        data_level: str | list = "l2",
+        data_level: None | str | list = "l2",
     ):
         self.start_date = start_date
         self.end_date = end_date
@@ -38,8 +36,8 @@ class BaseDownload(ABC):
     def process(file: str):
         raise NotImplementedError()
 
-    def download(self, parallel=True, dry_run=False, check_size=False):
-        files = self.get_remote_files(check_size)
+    def download(self, parallel=True, dry_run=False, data_type="science"):
+        files = self.get_remote_files(data_type)
         if dry_run:
             return
 
@@ -49,27 +47,27 @@ class BaseDownload(ABC):
                     progress_bar.write(msg)
                     progress_bar.update()
 
-    def get_remote_files(self, check_size=False) -> list:
-        url = f"{server}/file_info/science?{self._query_string}"
+    def get_remote_files(self, data_type: str) -> list:
+        url = f"{server}/file_info/{data_type}?{self._query_string}"
         response = requests.get(url)
         assert response.ok, "Query error!"
 
         files = response.json()["files"]
         remote_file_names = list(map(lambda x: x["file_name"], files))
         download_size = sum(list(map(lambda x: x["file_size"], files)))
-        free_disk_space = psutil.disk_usage("/home").free
         print(
-            f"{self._id}: Query found {len(files)} files with total size = "
-            f"{BYTE_TO_GIGABYTE * download_size:.4f} GB"
+            f"{self._id}: Query found {len(files)} files with"
+            f" total size = {BYTE_TO_GIGABYTE * download_size:.4f} GB",
+            flush=True,
         )
-        if check_size:
-            assert download_size < 0.95 * free_disk_space, "Download size too large"
-
         return remote_file_names
 
     @property
     def _id(self) -> str:
-        return f"({self.probe},{self.instrument},{self.data_rate})"
+        return (
+            f"({self.probe},{self.instrument},{self.data_rate},"
+            f"{self.data_type},{self.data_level})"
+        )
 
     @property
     def _query_string(self) -> str:
@@ -95,7 +93,7 @@ class BaseDownload(ABC):
 
     @start_date.setter
     def start_date(self, date: str):
-        assert isinstance(date, str), "Incorrect type for date input"
+        assert isinstance(date, str), "Incorrect type for `date` input!"
 
         self._start_date = pd.to_datetime(date)
 
@@ -108,45 +106,56 @@ class BaseDownload(ABC):
 
     @end_date.setter
     def end_date(self, date: str):
-        assert isinstance(date, str), "Incorrect type for date input"
+        assert isinstance(date, str), "Incorrect type for `date` input"
 
         self._end_date = pd.to_datetime(date)
 
     @property
-    def probe(self) -> str:
-        return ",".join(self._probe)
+    def probe(self) -> None | str:
+        if self._probe is None:
+            return None
+        else:
+            return ",".join(self._probe)
 
     @probe.setter
-    def probe(self, probe: str | list):
-        assert isinstance(probe, (str, list)), "Incorrect type for probe input"
+    def probe(self, probe: None | str | list):
+        assert probe is None or isinstance(
+            probe, (str, list)
+        ), "Incorrect type for `probe` input!"
         if isinstance(probe, str):
             probe = [probe]
 
         self._probe = probe
 
     @property
-    def instrument(self) -> str:
-        return ",".join(self._instrument)
+    def instrument(self) -> None | str:
+        if self._instrument is None:
+            return None
+        else:
+            return ",".join(self._instrument)
 
     @instrument.setter
-    def instrument(self, instrument: str | list):
-        assert isinstance(
+    def instrument(self, instrument: None | str | list):
+        assert instrument is None or isinstance(
             instrument, (str, list)
-        ), "Incorrect type for instrument input"
+        ), "Incorrect type for `instrument` input"
         if isinstance(instrument, str):
             instrument = [instrument]
 
         self._instrument = instrument
 
     @property
-    def data_rate(self) -> str:
-        return ",".join(self._data_rate)
+    def data_rate(self) -> None | str:
+        if self._data_rate is None:
+            return None
+        else:
+            return ",".join(self._data_rate)
 
     @data_rate.setter
-    def data_rate(self, data_rate: str | list):
-        assert isinstance(
+    def data_rate(self, data_rate: None | str | list):
+        assert data_rate is None or isinstance(
             data_rate, (str, list)
-        ), "Incorrect type for data rate input"
+        ), "Incorrect type for `data rate` input"
         if isinstance(data_rate, str):
             data_rate = [data_rate]
         elif ("srvy" in data_rate) or ("fast" in data_rate):
@@ -177,14 +186,17 @@ class BaseDownload(ABC):
         self._data_type = data_type
 
     @property
-    def data_level(self) -> str:
-        return ",".join(self._data_level)
+    def data_level(self) -> None | str:
+        if self._data_level is None:
+            return None
+        else:
+            return ",".join(self._data_level)
 
     @data_level.setter
-    def data_level(self, data_level: str | list):
-        assert isinstance(
+    def data_level(self, data_level: None | str | list):
+        assert data_level is None or isinstance(
             data_level, (str, list)
-        ), "Incorrect type for data level input"
+        ), "Incorrect type for `data level` input"
         if isinstance(data_level, str):
             data_level = [data_level]
 
