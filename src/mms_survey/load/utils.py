@@ -1,10 +1,15 @@
 __all__ = ["fix_epoch_metadata"]
 
-import pandas.api.types as pd
 import numpy as np
+import pandas.api.types as pd
 
 
-def fix_epoch_metadata(ds, vars=["Epoch",]):
+def fix_epoch_metadata(
+    ds,
+    vars=[
+        "Epoch",
+    ],
+):
     for var in vars:
         for key_to_remove in ["units", "UNITS"]:
             if key_to_remove in ds[var].attrs:
