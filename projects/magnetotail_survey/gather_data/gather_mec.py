@@ -8,4 +8,4 @@ for year in range(2017, 2021):
         data_rate="srvy",
         data_level="l2",
     )
-    d.download(dry_run=True)
+    d.download(dry_run=False)
