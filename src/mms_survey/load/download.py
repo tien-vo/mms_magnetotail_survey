@@ -8,8 +8,8 @@ from tempfile import NamedTemporaryFile
 from .base import server
 
 
-def download_file(remote_file_name: str):
-    url = f"{server}/download/science?file={remote_file_name}"
+def download_file(remote_file_name: str, data_type="science"):
+    url = f"{server}/download/{data_type}?file={remote_file_name}"
     with NamedTemporaryFile(delete=False, mode="wb") as temp_file:
         response = requests.get(url)
         file_size = int(response.headers.get("content-length"))
