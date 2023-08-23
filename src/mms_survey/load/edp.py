@@ -64,7 +64,6 @@ class LoadEDP(BaseLoader):
                     f"{pfx}_dce_gse_{sfx}": "E_gse",
                     f"{pfx}_dce_dsl_{sfx}": "E_dsl",
                     f"{pfx}_dce_err_{sfx}": "E_err",
-                    f"{pfx}_dce_par_epar_{sfx}": "E_para",
                     f"{pfx}_bitmask_{sfx}": "bitmask",
                 }
             )
