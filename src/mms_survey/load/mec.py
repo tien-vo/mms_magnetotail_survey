@@ -12,7 +12,7 @@ from .utils import fix_epoch_metadata
 warnings.filterwarnings("ignore")
 
 
-class DownloadFGM(BaseDownload):
+class DownloadMEC(BaseDownload):
 
     def __init__(
         self,
@@ -23,11 +23,12 @@ class DownloadFGM(BaseDownload):
         data_level: str = "l2",
     ):
         super().__init__(
-            instrument="fgm",
+            instrument="mec",
             start_date=start_date,
             end_date=end_date,
             probe=probe,
             data_rate=data_rate,
+            data_type="epht89q",
             data_level=data_level,
         )
 
@@ -39,30 +40,29 @@ class DownloadFGM(BaseDownload):
 
         ds = fix_epoch_metadata(
             cdf_to_xarray(temp_file, to_datetime=True, fillval_to_nan=True),
-            vars=["Epoch", "Epoch_state"])
-        probe, instrument, data_rate, data_level, tid, _ = file.split("_")
+            vars=["Epoch"])
+        probe, instrument, data_rate, _, data_type, tid, _ = file.split("_")
         pfx = f"{probe}_{instrument}"
-        sfx = f"{data_rate}_{data_level}"
 
-        # Split dataset into ephemeris and field data
-        fgm_vars = {
-            f"{pfx}_{var}_{sfx}": var for var in ["b_gse", "b_gsm", "flag"]
+        vars = {
+            f"{pfx}_{var}": var for var in [
+                "dipole_tilt",
+                "kp",
+                "dst",
+                "r_eci",
+                "v_eci",
+                "quat_eci_to_bcs",
+                "quat_eci_to_dbcs",
+                "quat_eci_to_dmpa",
+                "quat_eci_to_dsl",
+                "quat_eci_to_gse",
+                "quat_eci_to_gsm",
+            ]
         }
-        ds_fgm = ds[fgm_vars.keys()].rename(Epoch="time", **fgm_vars)
-        ds_fgm.to_zarr(
+        ds = ds[vars.keys()].rename(Epoch="time", **vars)
+        ds.to_zarr(
             store=zarr_store,
-            group=f"/{probe}/fgm/{data_rate}/{tid}",
-            mode="w",
-            consolidated=False,
-        )
-
-        eph_vars = {
-            f"{pfx}_{var}_{sfx}": var for var in ["r_gse", "r_gsm"]
-        }
-        ds_eph = ds[eph_vars.keys()].rename(Epoch_state="time", **eph_vars)
-        ds_eph.to_zarr(
-            store=zarr_store,
-            group=f"/{probe}/fgm-eph/{data_rate}/{tid}",
+            group=f"/{probe}/mec-{data_type}/{data_rate}/{tid}",
             mode="w",
             consolidated=False,
         )
@@ -72,5 +72,5 @@ class DownloadFGM(BaseDownload):
 
 
 if __name__ == "__main__":
-    d = DownloadFGM()
+    d = DownloadMEC()
     d.download()

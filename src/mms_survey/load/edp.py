@@ -5,8 +5,9 @@ from cdflib.xarray import cdf_to_xarray
 
 from mms_survey.utils.directory import zarr_store
 
-from .download import download_file
 from .base import BaseDownload
+from .download import download_file
+from .utils import fix_epoch_metadata
 
 warnings.filterwarnings("ignore")
 
@@ -39,23 +40,15 @@ class DownloadEDP(BaseDownload):
             return f"Issue processing {file}. File was not processed"
 
         ds = cdf_to_xarray(temp_file, to_datetime=True, fillval_to_nan=True)
-        file_name = ds.attrs["Logical_file_id"][0]
-        (
-            probe, instrument, data_rate, data_level, data_type, trange_id, _
-        ) = file_name.split("_")
+        probe, instrument, data_rate, level, data_type, tid, _ = file.split("_")
         pfx = f"{probe}_{instrument}"
-        sfx = f"{data_rate}_{data_level}"
-        for key in ["units", "UNITS", "FILLVAL", "VALIDMAX", "VALIDMIN"]:
-            if key in ds[f"{pfx}_epoch_{sfx}"].attrs:
-                del ds[f"{pfx}_epoch_{sfx}"].attrs[key]
+        sfx = f"{data_rate}_{level}"
+        ds = fix_epoch_metadata(ds, vars=[f"{pfx}_epoch_{sfx}",])
 
         if data_type == "dce":
             vars = {
                 f"{pfx}_{var}_{sfx}": var for var in [
-                    "dce_gse",
-                    "dce_par_epar",
-                    "dce_err",
-                    "bitmask",
+                    "dce_gse", "dce_par_epar", "dce_err", "bitmask",
                 ]
             }
         elif data_type == "scpot":
@@ -66,14 +59,13 @@ class DownloadEDP(BaseDownload):
         ds = ds[vars.keys()].rename({f"{pfx}_epoch_{sfx}": "time", **vars})
         ds.to_zarr(
             store=zarr_store,
-            group=f"/{probe}/{instrument}-{data_type}/{data_rate}/{trange_id}",
+            group=f"/{probe}/{instrument}-{data_type}/{data_rate}/{tid}",
             mode="w",
             consolidated=False,
         )
 
         os.unlink(temp_file)
-
-        return f"Processed {file_name}"
+        return f"Processed {file}"
 
 
 if __name__ == "__main__":
