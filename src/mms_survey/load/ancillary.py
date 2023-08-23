@@ -1,69 +1,92 @@
-__all__ = ["DownloadANCIL"]
+__all__ = ["LoadAncillary"]
 
 import os
 
-import psutil
-import requests
 import numpy as np
 import pandas as pd
+import requests
 import xarray as xr
 
-from mms_survey.utils.directory import zarr_store
+from mms_survey.utils.directory import zarr_store, zarr_compressor
 
-from .download import download_file
-from .base import BaseDownload, server, BYTE_TO_GIGABYTE
+from .base import BaseLoader
+from .download import download
 
 
-class DownloadANCIL(BaseDownload):
-    def get_remote_files(self, check_size=False) -> list:
-        url = f"{server}/file_info/ancillary?{self._query_string}"
-        response = requests.get(url)
-        assert response.ok, "Query error!"
-
-        files = response.json()["files"]
-        remote_file_names = list(map(lambda x: x["file_name"], files))
-        download_size = sum(list(map(lambda x: x["file_size"], files)))
-        free_disk_space = psutil.disk_usage("/home").free
-        print(
-            f"{self._id}: Query found {len(files)} files with total size = "
-            f"{BYTE_TO_GIGABYTE * download_size:.4f} GB"
+class LoadAncillary(BaseLoader):
+    def __init__(
+        self,
+        start_date: str = "2017-07-26",
+        end_date: str = "2017-07-26",
+        product: str | list = "defq",
+    ):
+        super().__init__(
+            instrument=None,
+            start_date=start_date,
+            end_date=end_date,
+            probe=None,
+            data_rate=None,
+            data_type=None,
+            data_level=None,
+            query_type="ancillary",
         )
-        if check_size:
-            assert download_size < 0.95 * free_disk_space, "Download size too large"
+        self.product = product
 
-        return remote_file_names
+    @property
+    def product(self) -> str:
+        return ",".join(self._product)
 
-    @staticmethod
-    def process(file: str):
-        temp_file = download_file(file, data_type="ancillary")
+    @product.setter
+    def product(self, product: str | list):
+        assert isinstance(
+            product, (str, list)
+        ), "Incorrect type for `product` input"
+        if isinstance(product, str):
+            product = [product]
+
+        self._product = product
+
+    @property
+    def _id(self) -> str:
+        return f"({self.product})"
+
+    @property
+    def query_string(self) -> str:
+        return f"{super().query_string}&product={self.product}"
+
+    def process(self, file: str):
+        # Extract some metadata from file name
+        _, product, start, end = os.path.splitext(file)[0].split("_")
+
+        # Download file into temporary file
+        url = f"{self.server}/download/{self.query_type}?file={file}"
+        temp_file = download(url)
         if temp_file is None:
-            return f"Issue processing {file}. File was not processed"
+            return f"Issue encountered! {file} was not processed!"
 
-        _, product, start_date, end_date = os.path.splitext(file)[0].split("_")
-
+        # Read TQF
         f = np.loadtxt(temp_file, skiprows=11, dtype=str)
         time = pd.to_datetime(f[:, 0], format="%Y-%j/%H:%M:%S.%f")
         tqf = xr.DataArray(
             f[:, 2].astype("f4"),
-            coords=(time,),
-            dims=("time",),
+            coords=dict(time=time),
             name="tqf",
         )
+
+        # Save
+        encoding = dict(tqf={"compressor": zarr_compressor})
         tqf.to_zarr(
-            store=zarr_store,
-            group=f"/ancillary/{product}/{start_date}_{end_date}",
-            mode="w",
+           store=zarr_store,
+           group=f"/ancillary/{product.lower()}/{start}_{end}",
+           mode="w",
+           encoding=encoding,
+           consolidated=False,
         )
 
         os.unlink(temp_file)
         return f"Processed {file}"
 
-    @property
-    def _query_string(self) -> str:
-        s = f"product=defq&start_date={self.start_date}&end_date={self.end_date}"
-        return s
-
 
 if __name__ == "__main__":
-    d = DownloadANCIL(end_date="2017-07-27")
+    d = LoadAncillary(end_date="2017-07-27")
     d.download()
