@@ -55,28 +55,39 @@ class LoadEDP(BaseLoader):
         ds = fix_epoch_metadata(
             cdf_to_xarray(temp_file, to_datetime=True, fillval_to_nan=True),
             vars=[f"{pfx}_epoch_{sfx}"],
-        )
+        ).reset_coords()
 
         if data_type == "dce":
-            vars = {
-                f"{pfx}_{var}_{sfx}": var
-                for var in [
-                    "dce_gse",
-                    "dce_par_epar",
-                    "dce_err",
-                    "bitmask",
-                ]
-            }
+            ds = ds.drop_dims("dim1").rename(
+                vars := {
+                    f"{pfx}_epoch_{sfx}": "time",
+                    f"{pfx}_dce_gse_{sfx}": "E_gse",
+                    f"{pfx}_dce_dsl_{sfx}": "E_dsl",
+                    f"{pfx}_dce_err_{sfx}": "E_err",
+                    f"{pfx}_dce_par_epar_{sfx}": "E_para",
+                    f"{pfx}_bitmask_{sfx}": "bitmask",
+                }
+            )
+            ds = ds.rename_dims(dict(dim0="space"))
+            ds = ds.assign_coords({"space": ["x", "y", "z"]})
         elif data_type == "scpot":
-            vars = {f"{pfx}_{var}_{sfx}": var for var in ["scpot"]}
+            ds = ds.drop_dims("dim0").rename(
+                vars := {
+                    f"{pfx}_epoch_{sfx}": "time",
+                    f"{pfx}_scpot_{sfx}": "V_sc",
+                }
+            )
         else:
             raise NotImplementedError()
 
-        ds = ds[vars.keys()].rename({f"{pfx}_epoch_{sfx}": "time", **vars})
+        ds = ds[list(vars.values())]
+        # Save
+        encoding = {x: {"compressor": zarr_compressor} for x in ds}
         ds.to_zarr(
             store=zarr_store,
-            group=f"/{probe}/{instrument}-{data_type}/{data_rate}/{tid}",
+            group=f"/{probe}/{instrument}_{data_type}/{data_rate}/{tid}",
             mode="w",
+            encoding=encoding,
             consolidated=False,
         )
 
