@@ -1,4 +1,4 @@
-__all__ = ["LoadMEC"]
+__all__ = ["LoadMagneticEphemerisCoordinates"]
 
 import os
 import warnings
@@ -12,14 +12,14 @@ from mms_survey.utils.io import (
     fix_epoch_metadata,
     store,
 )
+from mms_survey.utils.download import download
 
 from .base import BaseLoader
-from .download import download
 
 warnings.filterwarnings("ignore")
 
 
-class LoadMEC(BaseLoader):
+class LoadMagneticEphemerisCoordinates(BaseLoader):
     def __init__(
         self,
         start_date: str = "2017-07-26",
@@ -105,5 +105,5 @@ class LoadMEC(BaseLoader):
 
 
 if __name__ == "__main__":
-    d = LoadMEC()
+    d = LoadMagneticEphemerisCoordinates()
     d.download()

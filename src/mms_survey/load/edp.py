@@ -1,4 +1,4 @@
-__all__ = ["LoadEDP"]
+__all__ = ["LoadElectricDoubleProbes"]
 
 import os
 import warnings
@@ -12,14 +12,14 @@ from mms_survey.utils.io import (
     fix_epoch_metadata,
     store,
 )
+from mms_survey.utils.download import download
 
 from .base import BaseLoader
-from .download import download
 
 warnings.filterwarnings("ignore")
 
 
-class LoadEDP(BaseLoader):
+class LoadElectricDoubleProbes(BaseLoader):
     def __init__(
         self,
         start_date: str = "2017-07-26",
@@ -107,5 +107,5 @@ class LoadEDP(BaseLoader):
 
 
 if __name__ == "__main__":
-    d = LoadEDP(data_type="dce")
+    d = LoadElectricDoubleProbes(data_type="dce")
     d.download()

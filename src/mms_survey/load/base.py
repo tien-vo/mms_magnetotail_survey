@@ -36,17 +36,16 @@ class BaseLoader(ABC):
         self.query_type = query_type
         self.skip_ok_dataset = skip_ok_dataset
 
-    @staticmethod
     @abstractmethod
-    def process(file: str):
+    def process(self, file: str):
         raise NotImplementedError()
 
-    def download(self, parallel=True, dry_run=False):
+    def download(self, parallel: int = 1, dry_run: bool = False):
         files = self.get_remote_files()
         if dry_run:
             return
 
-        with Pool(8 if parallel else 1) as pool:
+        with Pool(parallel) as pool:
             with tqdm(total=len(files)) as progress_bar:
                 for msg in pool.uimap(self.process, files):
                     progress_bar.write(msg)
