@@ -7,10 +7,10 @@ import zarr
 from cdflib.xarray import cdf_to_xarray
 
 from mms_survey.utils.io import (
-    store,
     compressor,
-    fix_epoch_metadata,
     dataset_is_ok,
+    fix_epoch_metadata,
+    store,
 )
 
 from .base import BaseLoader
@@ -44,9 +44,9 @@ class LoadEDP(BaseLoader):
 
     def process(self, file: str):
         # Extract some metadata from file name
-        (
-            probe, instrument, data_rate, level, data_type, tid, _
-        ) = file.split("_")
+        (probe, instrument, data_rate, level, data_type, tid, _) = file.split(
+            "_"
+        )
         group = f"/{instrument}_{data_type}/{data_rate}/{probe}/{tid}"
         pfx = f"{probe}_{instrument}"
         sfx = f"{data_rate}_{level}"

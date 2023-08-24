@@ -7,10 +7,10 @@ import zarr
 from cdflib.xarray import cdf_to_xarray
 
 from mms_survey.utils.io import (
-    store,
     compressor,
-    fix_epoch_metadata,
     dataset_is_ok,
+    fix_epoch_metadata,
+    store,
 )
 
 from .base import BaseLoader

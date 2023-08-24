@@ -8,9 +8,9 @@ __all__ = [
 
 from pathlib import Path
 
-import zarr
 import numpy as np
 import pandas.api.types as pd
+import zarr
 from numcodecs import Blosc
 
 work_dir = Path(__file__).resolve().parent / ".." / ".." / ".."

@@ -7,10 +7,10 @@ import zarr
 from cdflib.xarray import cdf_to_xarray
 
 from mms_survey.utils.io import (
-    store,
     compressor,
-    fix_epoch_metadata,
     dataset_is_ok,
+    fix_epoch_metadata,
+    store,
 )
 
 from .base import BaseLoader
@@ -63,10 +63,12 @@ class LoadMEC(BaseLoader):
             vars=["Epoch"],
         ).reset_coords()
         ds = ds.rename_dims(dict(dim0="quaternion", dim2="space"))
-        ds = ds.assign_coords({
-            "space": ["x", "y", "z"],
-            "quaternion": ["x", "y", "z", "w"],
-        })
+        ds = ds.assign_coords(
+            {
+                "space": ["x", "y", "z"],
+                "quaternion": ["x", "y", "z", "w"],
+            }
+        )
 
         # Rename variables and remove unwanted variables
         ds = ds.rename(

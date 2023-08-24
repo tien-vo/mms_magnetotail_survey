@@ -2,13 +2,13 @@ __all__ = ["LoadAncillary"]
 
 import os
 
-import zarr
-import requests
 import numpy as np
 import pandas as pd
+import requests
 import xarray as xr
+import zarr
 
-from mms_survey.utils.io import store, compressor, dataset_is_ok
+from mms_survey.utils.io import compressor, dataset_is_ok, store
 
 from .base import BaseLoader
 from .download import download
@@ -82,11 +82,11 @@ class LoadAncillary(BaseLoader):
         # Save
         encoding = dict(tqf={"compressor": compressor})
         tqf.to_zarr(
-           mode="w",
-           store=store,
-           group=group,
-           encoding=encoding,
-           consolidated=False,
+            mode="w",
+            store=store,
+            group=group,
+            encoding=encoding,
+            consolidated=False,
         )
 
         os.unlink(temp_file)

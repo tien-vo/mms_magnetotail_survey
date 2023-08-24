@@ -6,7 +6,7 @@ import warnings
 import numpy as np
 from cdflib.xarray import cdf_to_xarray
 
-from mms_survey.utils.directory import zarr_store, zarr_compressor
+from mms_survey.utils.directory import zarr_compressor, zarr_store
 
 from .base import BaseLoader
 from .download import download
@@ -38,9 +38,7 @@ class LoadFPI(BaseLoader):
 
     def process(self, file: str):
         # Extract some metadata from file name
-        (
-            probe, instrument, data_rate, _, data_type, tid, _
-        ) = file.split("_")
+        (probe, instrument, data_rate, _, data_type, tid, _) = file.split("_")
         data_type = data_type.split("-")[0]
         species = "ion" if data_type == "dis" else "elc"
         pfx = f"{probe}_{data_type}"
@@ -55,10 +53,16 @@ class LoadFPI(BaseLoader):
             return f"Issue encountered! {file} was not processed!"
 
         # Fix dataset dimension & metadata
-        ds = fix_epoch_metadata(
-            cdf_to_xarray(temp_file, to_datetime=True, fillval_to_nan=True),
-            vars=["Epoch"],
-        ).rename_dims({f"{pfx}_energy_{sfx}_dim": "energy"}).reset_coords()
+        ds = (
+            fix_epoch_metadata(
+                cdf_to_xarray(
+                    temp_file, to_datetime=True, fillval_to_nan=True
+                ),
+                vars=["Epoch"],
+            )
+            .rename_dims({f"{pfx}_energy_{sfx}_dim": "energy"})
+            .reset_coords()
+        )
 
         # Center time stamps
         dt = np.int64(0.5e9 * (ds.Epoch_plus_var - ds.Epoch_minus_var).values)

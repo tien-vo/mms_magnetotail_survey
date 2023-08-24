@@ -5,7 +5,7 @@ import warnings
 
 from cdflib.xarray import cdf_to_xarray
 
-from mms_survey.utils.directory import zarr_store, zarr_compressor
+from mms_survey.utils.directory import zarr_compressor, zarr_store
 
 from .base import BaseLoader
 from .download import download
@@ -42,7 +42,9 @@ class LoadFEEPS(BaseLoader):
 
     def process(self, file: str):
         # Extract some metadata from file name
-        probe, instrument, data_rate, level, data_type, tid, _ = file.split("_")
+        probe, instrument, data_rate, level, data_type, tid, _ = file.split(
+            "_"
+        )
         species = "ion" if data_type == "ion" else "elc"
         pfx = f"{probe}_epd_{instrument}_{data_rate}_{level}_{data_type}"
         if instrument != "feeps":
@@ -61,33 +63,35 @@ class LoadFEEPS(BaseLoader):
         ).reset_coords()
 
         # Rename variables and remove unwanted variables
-        ds = ds.rename(vars := {
-            "epoch": "time",
-            **{
-                f"{pfx}_{head}_{var}_sensorid_{eye}": f"{var}_{head[0]}{eye}"
-                for head in ["top", "bottom"]
-                for eye in eyes[species]
-                for var in [
-                    "quality_indicator",
-                    "energy_centroid",
-                    "count_rate",
-                    "intensity",
-                    "sector_mask",
-                    "sun_contamination",
-                    "percent_error",
-                ]
-            },
-            **{
-                f"{pfx}_{var}": var
-                for var in [
-                    "spin",
-                    "spinsectnum",
-                    "integration_sectors",
-                    "spin_duration",
-                    "pitch_angle",
-                ]
+        ds = ds.rename(
+            vars := {
+                "epoch": "time",
+                **{
+                    f"{pfx}_{head}_{var}_sensorid_{eye}": f"{var}_{head[0]}{eye}"
+                    for head in ["top", "bottom"]
+                    for eye in eyes[species]
+                    for var in [
+                        "quality_indicator",
+                        "energy_centroid",
+                        "count_rate",
+                        "intensity",
+                        "sector_mask",
+                        "sun_contamination",
+                        "percent_error",
+                    ]
+                },
+                **{
+                    f"{pfx}_{var}": var
+                    for var in [
+                        "spin",
+                        "spinsectnum",
+                        "integration_sectors",
+                        "spin_duration",
+                        "pitch_angle",
+                    ]
+                },
             }
-        }).drop_dims(["dim0", "dim3", "dim4"])
+        ).drop_dims(["dim0", "dim3", "dim4"])
         ds = ds.rename_dims(dict(dim1="mask", dim2="space"))
         ds = ds.assign_coords({"space": ["x", "y", "z"]})
         ds = ds[list(vars.values())]
