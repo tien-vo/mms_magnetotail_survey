@@ -8,8 +8,8 @@ import requests
 import xarray as xr
 import zarr
 
-from mms_survey.utils.io import compressor, dataset_is_ok, store
 from mms_survey.utils.download import download
+from mms_survey.utils.io import compressor, dataset_is_ok, store
 
 from .base import BaseLoader
 

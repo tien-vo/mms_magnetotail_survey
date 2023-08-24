@@ -10,19 +10,19 @@ from pathlib import Path
 
 import numpy as np
 import pandas.api.types as pd
+import xarray as xr
 import zarr
 from numcodecs import Blosc
 
 work_dir = Path(__file__).resolve().parent / ".." / ".." / ".."
 data_dir = work_dir / "data"
-for dir in [data_dir]:
-    dir.mkdir(parents=True, exist_ok=True)
-
 store = zarr.NestedDirectoryStore(data_dir / "database.zarr")
 compressor = Blosc(cname="zstd", clevel=7)
 
 
-def fix_epoch_metadata(dataset, vars=["Epoch"]):
+def fix_epoch_metadata(
+    dataset: xr.Dataset, vars: list = ["Epoch"]
+) -> xr.Dataset:
     for var in vars:
         for key_to_remove in ["units", "UNITS"]:
             if key_to_remove in dataset[var].attrs:
@@ -35,7 +35,7 @@ def fix_epoch_metadata(dataset, vars=["Epoch"]):
     return dataset
 
 
-def dataset_is_ok(group: str):
+def dataset_is_ok(group: str) -> bool:
     database = zarr.open(store)
     try:
         return database[group].attrs["ok"]

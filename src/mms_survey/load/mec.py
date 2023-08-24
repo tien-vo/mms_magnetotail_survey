@@ -1,22 +1,19 @@
 __all__ = ["LoadMagneticEphemerisCoordinates"]
 
 import os
-import warnings
 
 import zarr
 from cdflib.xarray import cdf_to_xarray
 
+from mms_survey.utils.download import download
 from mms_survey.utils.io import (
     compressor,
     dataset_is_ok,
     fix_epoch_metadata,
     store,
 )
-from mms_survey.utils.download import download
 
 from .base import BaseLoader
-
-warnings.filterwarnings("ignore")
 
 
 class LoadMagneticEphemerisCoordinates(BaseLoader):
