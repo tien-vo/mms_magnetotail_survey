@@ -24,6 +24,7 @@ class BaseLoader(ABC):
         data_type: None | str | list = None,
         data_level: None | str | list = "l2",
         query_type: str = "science",
+        skip_ok_dataset: bool = False,
     ):
         self.start_date = start_date
         self.end_date = end_date
@@ -33,6 +34,7 @@ class BaseLoader(ABC):
         self.data_type = data_type
         self.data_level = data_level
         self.query_type = query_type
+        self.skip_ok_dataset = skip_ok_dataset
 
     @staticmethod
     @abstractmethod

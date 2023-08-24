@@ -3,13 +3,18 @@ __all__ = ["LoadMEC"]
 import os
 import warnings
 
+import zarr
 from cdflib.xarray import cdf_to_xarray
 
-from mms_survey.utils.directory import zarr_store, zarr_compressor
+from mms_survey.utils.io import (
+    store,
+    compressor,
+    fix_epoch_metadata,
+    dataset_is_ok,
+)
 
 from .base import BaseLoader
 from .download import download
-from .utils import fix_epoch_metadata
 
 warnings.filterwarnings("ignore")
 
@@ -22,6 +27,7 @@ class LoadMEC(BaseLoader):
         probe: str = "mms1",
         data_rate: str = "srvy",
         data_level: str = "l2",
+        skip_ok_dataset: bool = False,
     ):
         super().__init__(
             instrument="mec",
@@ -32,14 +38,18 @@ class LoadMEC(BaseLoader):
             data_type="epht89q",
             data_level=data_level,
             query_type="science",
+            skip_ok_dataset=skip_ok_dataset,
         )
 
     def process(self, file: str):
         # Extract some metadata from file name
         probe, instrument, data_rate, _, data_type, tid, _ = file.split("_")
+        group = f"/{instrument}/{data_rate}/{probe}/{tid}"
         pfx = f"{probe}_{instrument}"
         if instrument != "mec":
             return f"File {file} is not in MEC dataset!"
+        if self.skip_ok_dataset and dataset_is_ok(group):
+            return f"{file} already processed. Skipping..."
 
         # Download file into temporary file
         url = f"{self.server}/download/{self.query_type}?file={file}"
@@ -55,7 +65,7 @@ class LoadMEC(BaseLoader):
         ds = ds.rename_dims(dict(dim0="quaternion", dim2="space"))
         ds = ds.assign_coords({
             "space": ["x", "y", "z"],
-            "quaternion": ["qx", "qy", "qz", "qw"],
+            "quaternion": ["x", "y", "z", "w"],
         })
 
         # Rename variables and remove unwanted variables
@@ -77,16 +87,18 @@ class LoadMEC(BaseLoader):
         ds = ds[list(vars.values())]
 
         # Save
-        encoding = {x: {"compressor": zarr_compressor} for x in ds}
+        encoding = {x: {"compressor": compressor} for x in ds}
         ds.to_zarr(
-            store=zarr_store,
-            group=f"/{probe}/mec/{data_rate}/{tid}",
             mode="w",
+            store=store,
+            group=group,
             encoding=encoding,
             consolidated=False,
         )
 
         os.unlink(temp_file)
+        zarr_file = zarr.open(store)
+        zarr_file[group].attrs["ok"] = True
         return f"Processed {file}"
 
 

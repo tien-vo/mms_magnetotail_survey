@@ -6,5 +6,6 @@ d = LoadMEC(
     probe=["mms1", "mms2", "mms3", "mms4"],
     data_rate="srvy",
     data_level="l2",
+    skip_ok_dataset=True,
 )
 d.download(dry_run=False)

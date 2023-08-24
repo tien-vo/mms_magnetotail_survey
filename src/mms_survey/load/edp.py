@@ -3,13 +3,18 @@ __all__ = ["LoadEDP"]
 import os
 import warnings
 
+import zarr
 from cdflib.xarray import cdf_to_xarray
 
-from mms_survey.utils.directory import zarr_store, zarr_compressor
+from mms_survey.utils.io import (
+    store,
+    compressor,
+    fix_epoch_metadata,
+    dataset_is_ok,
+)
 
 from .base import BaseLoader
 from .download import download
-from .utils import fix_epoch_metadata
 
 warnings.filterwarnings("ignore")
 
@@ -23,6 +28,7 @@ class LoadEDP(BaseLoader):
         data_rate: str = "srvy",
         data_type: str = "dce",
         data_level: str = "l2",
+        skip_ok_dataset: bool = False,
     ):
         super().__init__(
             instrument="edp",
@@ -33,6 +39,7 @@ class LoadEDP(BaseLoader):
             data_type=data_type,
             data_level=data_level,
             query_type="science",
+            skip_ok_dataset=skip_ok_dataset,
         )
 
     def process(self, file: str):
@@ -40,10 +47,13 @@ class LoadEDP(BaseLoader):
         (
             probe, instrument, data_rate, level, data_type, tid, _
         ) = file.split("_")
+        group = f"/{instrument}_{data_type}/{data_rate}/{probe}/{tid}"
         pfx = f"{probe}_{instrument}"
         sfx = f"{data_rate}_{level}"
         if instrument != "edp":
             return f"File {file} is not in EDP dataset!"
+        if self.skip_ok_dataset and dataset_is_ok(group):
+            return f"{file} already processed. Skipping..."
 
         # Download file into temporary file
         url = f"{self.server}/download/{self.query_type}?file={file}"
@@ -73,7 +83,7 @@ class LoadEDP(BaseLoader):
             ds = ds.drop_dims("dim0").rename(
                 vars := {
                     f"{pfx}_epoch_{sfx}": "time",
-                    f"{pfx}_scpot_{sfx}": "V_sc",
+                    f"{pfx}_scpot_{sfx}": "Phi_sc",
                 }
             )
         else:
@@ -81,16 +91,18 @@ class LoadEDP(BaseLoader):
 
         ds = ds[list(vars.values())]
         # Save
-        encoding = {x: {"compressor": zarr_compressor} for x in ds}
+        encoding = {x: {"compressor": compressor} for x in ds}
         ds.to_zarr(
-            store=zarr_store,
-            group=f"/{probe}/{instrument}_{data_type}/{data_rate}/{tid}",
             mode="w",
+            store=store,
+            group=group,
             encoding=encoding,
             consolidated=False,
         )
 
         os.unlink(temp_file)
+        zarr_file = zarr.open(store)
+        zarr_file[group].attrs["ok"] = True
         return f"Processed {file}"
 
 

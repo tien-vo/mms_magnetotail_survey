@@ -2,12 +2,13 @@ __all__ = ["LoadAncillary"]
 
 import os
 
+import zarr
+import requests
 import numpy as np
 import pandas as pd
-import requests
 import xarray as xr
 
-from mms_survey.utils.directory import zarr_store, zarr_compressor
+from mms_survey.utils.io import store, compressor, dataset_is_ok
 
 from .base import BaseLoader
 from .download import download
@@ -19,6 +20,7 @@ class LoadAncillary(BaseLoader):
         start_date: str = "2017-07-26",
         end_date: str = "2017-07-26",
         product: str | list = "defq",
+        skip_ok_dataset: bool = False,
     ):
         super().__init__(
             instrument=None,
@@ -29,6 +31,7 @@ class LoadAncillary(BaseLoader):
             data_type=None,
             data_level=None,
             query_type="ancillary",
+            skip_ok_dataset=skip_ok_dataset,
         )
         self.product = product
 
@@ -57,6 +60,9 @@ class LoadAncillary(BaseLoader):
     def process(self, file: str):
         # Extract some metadata from file name
         _, product, start, end = os.path.splitext(file)[0].split("_")
+        group = f"/ancillary/{product.lower()}/{start}_{end}"
+        if self.skip_ok_dataset and dataset_is_ok(group):
+            return f"{file} already processed. Skipping..."
 
         # Download file into temporary file
         url = f"{self.server}/download/{self.query_type}?file={file}"
@@ -74,16 +80,18 @@ class LoadAncillary(BaseLoader):
         )
 
         # Save
-        encoding = dict(tqf={"compressor": zarr_compressor})
+        encoding = dict(tqf={"compressor": compressor})
         tqf.to_zarr(
-           store=zarr_store,
-           group=f"/ancillary/{product.lower()}/{start}_{end}",
            mode="w",
+           store=store,
+           group=group,
            encoding=encoding,
            consolidated=False,
         )
 
         os.unlink(temp_file)
+        zarr_file = zarr.open(store)
+        zarr_file[group].attrs["ok"] = True
         return f"Processed {file}"
 
 
