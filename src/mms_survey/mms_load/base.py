@@ -79,7 +79,7 @@ class BaseLoader(ABC):
     def download_file(self, file: str) -> str:
         local_file_name = None
         with NamedTemporaryFile(delete=False, mode="wb") as temp_file:
-            # Try 3 times
+            temp_file_name = temp_file.name
             for _ in range(3):
                 try:
                     response = requests.get(
@@ -91,17 +91,19 @@ class BaseLoader(ABC):
                         response.headers.get("content-length")
                     )
                     temp_file.write(response.content)
-                    download_size = os.path.getsize(temp_file.name)
+                    download_size = os.path.getsize(temp_file_name)
                     if file_size == download_size:
-                        local_file_name = temp_file.name
-                    break
+                        local_file_name = temp_file_name
+                        break
                 except (
                     requests.ConnectionError,
                     requests.HTTPError,
                     requests.Timeout,
                 ):
-                    os.unlink(temp_file.name)
+                    pass
 
+        if local_file_name is None:
+            os.unlink(temp_file_name)
         return local_file_name
 
     def should_skip(self, group: str) -> bool:
