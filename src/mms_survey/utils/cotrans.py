@@ -1,5 +1,5 @@
-import xarray as xr
 import quaternion as np_q
+import xarray as xr
 
 
 def quaternion_rotate(V: xr.DataArray, Q: xr.DataArray, inverse: bool = False):
@@ -12,8 +12,12 @@ def quaternion_rotate(V: xr.DataArray, Q: xr.DataArray, inverse: bool = False):
 
     # Sanity checks
     assert "space" in V.coords, "Input vector must have spatial coordinates"
-    assert "quaternion" in Q.coords, "Input quaternion must have quaternion coordinates"
-    assert V.attrs["COORDINATE_SYSTEM"] == Q.attrs[in_coord], "Inputs must be in the same coordinate system"
+    assert (
+        "quaternion" in Q.coords
+    ), "Input quaternion must have quaternion coordinates"
+    assert (
+        V.attrs["COORDINATE_SYSTEM"] == Q.attrs[in_coord]
+    ), "Inputs must be in the same coordinate system"
 
     # numpy-quaternion uses (w, i, j, k) representation
     Q = Q.reindex({"quaternion": ["w", "x", "y", "z"]})

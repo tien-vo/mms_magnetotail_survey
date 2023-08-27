@@ -2,16 +2,9 @@ __all__ = ["LoadFluxGateMagnetometer"]
 
 import os
 
-import zarr
 from cdflib.xarray import cdf_to_xarray
 
-from mms_survey.utils.download import download
-from mms_survey.utils.io import (
-    compressor,
-    dataset_is_ok,
-    fix_epoch_metadata,
-    store,
-)
+from mms_survey.utils.io import compressor, fix_epoch_metadata, store
 
 from .base import BaseLoader
 
@@ -32,37 +25,40 @@ class LoadFluxGateMagnetometer(BaseLoader):
             end_date=end_date,
             probe=probe,
             data_rate=data_rate,
+            data_type=None,
             data_level=data_level,
+            product=None,
             query_type="science",
             skip_ok_dataset=skip_ok_dataset,
         )
 
-    def process(self, file: str):
-        # Extract some metadata from file name
-        probe, instrument, data_rate, level, tid, _ = file.split("_")
-        group = f"/{instrument}/{data_rate}/{probe}/{tid}"
-        pfx = f"{probe}_{instrument}"
-        sfx = f"{data_rate}_{level}"
-        if instrument != "fgm":
-            return f"File {file} is not in FGM dataset!"
-        if self.skip_ok_dataset and dataset_is_ok(group):
-            return f"{file} already processed. Skipping..."
+    def get_metadata(self, file: str) -> dict:
+        name = os.path.splitext(file)[0]
+        probe, instrument, data_rate, data_level, tid, _ = name.split("_")
+        return {
+            "file": file,
+            "probe": probe,
+            "instrument": instrument,
+            "data_rate": data_rate,
+            "data_level": data_level,
+            "group": f"/{data_rate}/{instrument}/{probe}/{tid}",
+        }
 
-        # Download file into temporary file
-        url = f"{self.server}/download/{self.query_type}?file={file}"
-        temp_file = download(url)
-        if temp_file is None:
-            return f"Issue encountered! {file} was not processed!"
+    def process_file(self, file: str, metadata: dict):
+        if metadata["instrument"] != self.instrument:
+            return f"{file} is not in FGM dataset!"
 
-        # Fix dataset dimension & metadata
+        # Load file and fix metadata
+        ds = cdf_to_xarray(file, to_datetime=True, fillval_to_nan=True)
         ds = fix_epoch_metadata(
-            cdf_to_xarray(temp_file, to_datetime=True, fillval_to_nan=True),
-            vars=["Epoch", "Epoch_state"],
+            ds, vars=["Epoch", "Epoch_state"]
         ).reset_coords()
         ds = ds.rename_dims(dict(dim0="space"))
         ds = ds.assign_coords({"space": ["x", "y", "z", "mag"]})
 
         # Rename variables and remove unwanted variables
+        pfx = f"{metadata['probe']}_{metadata['instrument']}"
+        sfx = f"{metadata['data_rate']}_{metadata['data_level']}"
         ds = ds.rename(
             vars := {
                 "Epoch": "time",
@@ -75,21 +71,17 @@ class LoadFluxGateMagnetometer(BaseLoader):
             }
         )
         ds = ds[list(vars.values())]
+        ds.attrs["ok"] = True
 
         # Save
         encoding = {x: {"compressor": compressor} for x in ds}
         ds.to_zarr(
             mode="w",
             store=store,
-            group=group,
+            group=metadata["group"],
             encoding=encoding,
             consolidated=False,
         )
-
-        os.unlink(temp_file)
-        zarr_file = zarr.open(store)
-        zarr_file[group].attrs["ok"] = True
-        return f"Processed {file}"
 
 
 if __name__ == "__main__":

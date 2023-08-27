@@ -5,13 +5,7 @@ import os
 import zarr
 from cdflib.xarray import cdf_to_xarray
 
-from mms_survey.utils.download import download
-from mms_survey.utils.io import (
-    compressor,
-    dataset_is_ok,
-    fix_epoch_metadata,
-    store,
-)
+from mms_survey.utils.io import compressor, fix_epoch_metadata, store
 
 from .base import BaseLoader
 
@@ -34,31 +28,29 @@ class LoadMagneticEphemerisCoordinates(BaseLoader):
             data_rate=data_rate,
             data_type="epht89q",
             data_level=data_level,
+            product=None,
             query_type="science",
             skip_ok_dataset=skip_ok_dataset,
         )
 
-    def process(self, file: str):
-        # Extract some metadata from file name
-        probe, instrument, data_rate, _, data_type, tid, _ = file.split("_")
-        group = f"/{instrument}/{data_rate}/{probe}/{tid}"
-        pfx = f"{probe}_{instrument}"
-        if instrument != "mec":
-            return f"File {file} is not in MEC dataset!"
-        if self.skip_ok_dataset and dataset_is_ok(group):
-            return f"{file} already processed. Skipping..."
+    def get_metadata(self, file: str) -> dict:
+        name = os.path.splitext(file)[0]
+        probe, instrument, data_rate, _, _, tid, _ = name.split("_")
+        return {
+            "file": file,
+            "probe": probe,
+            "instrument": instrument,
+            "data_rate": data_rate,
+            "group": f"/{data_rate}/{instrument}/{probe}/{tid}",
+        }
 
-        # Download file into temporary file
-        url = f"{self.server}/download/{self.query_type}?file={file}"
-        temp_file = download(url)
-        if temp_file is None:
-            return f"Issue encountered! {file} was not processed!"
+    def process_file(self, file: str, metadata: str):
+        if metadata["instrument"] != self.instrument:
+            return f"{file} is not in EDP dataset!"
 
-        # Fix dataset dimension & metadata
-        ds = fix_epoch_metadata(
-            cdf_to_xarray(temp_file, to_datetime=True, fillval_to_nan=True),
-            vars=["Epoch"],
-        ).reset_coords()
+        # Load file and fix metadata
+        ds = cdf_to_xarray(file, to_datetime=True, fillval_to_nan=True)
+        ds = fix_epoch_metadata(ds, vars=["Epoch"]).reset_coords()
         ds = ds.rename_dims(dict(dim0="quaternion", dim2="space"))
         ds = ds.assign_coords(
             {
@@ -68,6 +60,7 @@ class LoadMagneticEphemerisCoordinates(BaseLoader):
         )
 
         # Rename variables and remove unwanted variables
+        pfx = f"{metadata['probe']}_{metadata['instrument']}"
         ds = ds.rename(
             vars := {
                 "Epoch": "time",
@@ -76,29 +69,25 @@ class LoadMagneticEphemerisCoordinates(BaseLoader):
                 f"{pfx}_dst": "dst",
                 f"{pfx}_r_eci": "R_eci",
                 f"{pfx}_v_eci": "V_eci",
-                f"{pfx}_quat_eci_to_bcs": "Q_bcs",
-                f"{pfx}_quat_eci_to_dbcs": "Q_dbcs",
-                f"{pfx}_quat_eci_to_dsl": "Q_dsl",
-                f"{pfx}_quat_eci_to_gse": "Q_gse",
-                f"{pfx}_quat_eci_to_gsm": "Q_gsm",
+                f"{pfx}_quat_eci_to_bcs": "Q_eci_to_bcs",
+                f"{pfx}_quat_eci_to_dbcs": "Q_eci_to_dbcs",
+                f"{pfx}_quat_eci_to_dsl": "Q_eci_to_dsl",
+                f"{pfx}_quat_eci_to_gse": "Q_eci_to_gse",
+                f"{pfx}_quat_eci_to_gsm": "Q_eci_to_gsm",
             }
         )
         ds = ds[list(vars.values())]
+        ds.attrs["ok"] = True
 
         # Save
         encoding = {x: {"compressor": compressor} for x in ds}
         ds.to_zarr(
             mode="w",
             store=store,
-            group=group,
+            group=metadata["group"],
             encoding=encoding,
             consolidated=False,
         )
-
-        os.unlink(temp_file)
-        zarr_file = zarr.open(store)
-        zarr_file[group].attrs["ok"] = True
-        return f"Processed {file}"
 
 
 if __name__ == "__main__":
