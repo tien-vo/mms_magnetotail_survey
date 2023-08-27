@@ -17,7 +17,7 @@ from numcodecs import Blosc
 work_dir = Path(__file__).resolve().parent / ".." / ".." / ".."
 data_dir = work_dir / "data"
 store = zarr.NestedDirectoryStore(data_dir / "database.zarr")
-compressor = Blosc(cname="zstd", clevel=7)
+compressor = Blosc(cname="zstd", clevel=9)
 
 
 def fix_epoch_metadata(

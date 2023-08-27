@@ -79,23 +79,28 @@ class BaseLoader(ABC):
     def download_file(self, file: str) -> str:
         local_file_name = None
         with NamedTemporaryFile(delete=False, mode="wb") as temp_file:
-            try:
-                response = requests.get(
-                    url=f"{self.server}/download/{self.query_type}",
-                    params=self.get_payload(file=file),
-                    timeout=60.0,
-                )
-                file_size = np.int64(response.headers.get("content-length"))
-                temp_file.write(response.content)
-                download_size = os.path.getsize(temp_file.name)
-                if file_size == download_size:
-                    local_file_name = temp_file.name
-            except (
-                requests.ConnectionError,
-                requests.HTTPError,
-                requests.Timeout,
-            ):
-                os.unlink(temp_file.name)
+            # Try 3 times
+            for _ in range(3):
+                try:
+                    response = requests.get(
+                        url=f"{self.server}/download/{self.query_type}",
+                        params=self.get_payload(file=file),
+                        timeout=60.0,
+                    )
+                    file_size = np.int64(
+                        response.headers.get("content-length")
+                    )
+                    temp_file.write(response.content)
+                    download_size = os.path.getsize(temp_file.name)
+                    if file_size == download_size:
+                        local_file_name = temp_file.name
+                    break
+                except (
+                    requests.ConnectionError,
+                    requests.HTTPError,
+                    requests.Timeout,
+                ):
+                    os.unlink(temp_file.name)
 
         return local_file_name
 
