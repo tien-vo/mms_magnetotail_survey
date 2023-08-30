@@ -3,10 +3,10 @@ from mms_survey.mms_load.mec import LoadMagneticEphemerisCoordinates
 from mms_survey.mms_load.fgm import LoadFluxGateMagnetometer
 from mms_survey.mms_load.edp import LoadElectricDoubleProbes
 
-start_date = "2017-01-01"
-end_date = "2021-01-01"
-#start_date = "2017-07-26"
-#end_date = "2017-07-27"
+#start_date = "2017-01-01"
+#end_date = "2021-01-01"
+start_date = "2017-07-26"
+end_date = "2017-07-27"
 data_rate = "srvy"
 dry_run = False
 parallel = 8
