@@ -8,9 +8,9 @@ end_date = "2021-01-01"
 #start_date = "2017-07-26"
 #end_date = "2017-07-27"
 data_rate = "srvy"
-dry_run = True
+dry_run = False
 parallel = 8
-skip_ok_dataset = False
+skip_ok_dataset = True
 
 d = LoadTetrahedronQualityFactor(
     start_date=start_date,
