@@ -1341,6 +1341,65 @@ files = [
 ]
 
 [[package]]
+name = "numpy-quaternion"
+version = "2022.4.3"
+description = "Add a quaternion dtype to NumPy"
+optional = false
+python-versions = "*"
+files = [
+    {file = "numpy-quaternion-2022.4.3.tar.gz", hash = "sha256:ca37256f544a7e587ab08c1841a30e34aa7b85c7c9663527c61d77fbcad9dda7"},
+    {file = "numpy_quaternion-2022.4.3-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:c403eeddfc19cb3b400abbd6daabd9aec9843344e9b9c739f080d27291e3d75e"},
+    {file = "numpy_quaternion-2022.4.3-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:ca743f7ca7a86b555cfc7e9f72acb7eb50fd56ec28834432b54b00896ba6363a"},
+    {file = "numpy_quaternion-2022.4.3-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:a4db146a130d53cea5d74543950e5ebd01dd7603dfe5a42d4f3ebc76539551bb"},
+    {file = "numpy_quaternion-2022.4.3-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:9ebf377c7174f4b32e1078e4607afbb3c4e0d0365dc633d43654f01e3703e800"},
+    {file = "numpy_quaternion-2022.4.3-cp310-cp310-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:ce50c414e884d8d18615cb6b5c928929e9dcff2f98f4606b2cc7a5b4dd5f5fb4"},
+    {file = "numpy_quaternion-2022.4.3-cp310-cp310-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:ca29e8f961673932d123a8b2520ef7ded9fee4e426aed628d90ced0749608285"},
+    {file = "numpy_quaternion-2022.4.3-cp310-cp310-musllinux_1_1_i686.whl", hash = "sha256:9a7fcf818691aec1250f53c99c7958f57e09489e5ce1371b3a5342b65439da9d"},
+    {file = "numpy_quaternion-2022.4.3-cp310-cp310-musllinux_1_1_x86_64.whl", hash = "sha256:7cfec847bca62ff2ff50b190fb0e7c733a0f7f42ce6ac6385166bf6c814d5b15"},
+    {file = "numpy_quaternion-2022.4.3-cp310-cp310-win32.whl", hash = "sha256:3c7de12e8270e6b4fa7da9da372134a56a85eebbb1b1d81e8419e8315cea7227"},
+    {file = "numpy_quaternion-2022.4.3-cp310-cp310-win_amd64.whl", hash = "sha256:53bcaa3c0fb245623a092eb43224e30b883882b3460143487cccf9797fc865ae"},
+    {file = "numpy_quaternion-2022.4.3-cp311-cp311-macosx_10_9_universal2.whl", hash = "sha256:5d9e6bec15afeba28022b7a44fdf28da27fd0422075b76be99c5be70969d52e6"},
+    {file = "numpy_quaternion-2022.4.3-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:7e7c36d949d09e07bd091bae1cb7c56b7dcedfb2c570f89e75be6de9f37d44a6"},
+    {file = "numpy_quaternion-2022.4.3-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:c521e6ee255c74f1ef604bd8ebdfdc32225d9ac7ce52c731562d4b4e01358793"},
+    {file = "numpy_quaternion-2022.4.3-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:c5f13b7faa8b9859fba94f1425d9ac6478d74fa2b26f5cb0b8258a48365ee49b"},
+    {file = "numpy_quaternion-2022.4.3-cp311-cp311-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:364c142af3ba8aac3ee6de9ab652a409133d23d81642c18fae150585b006cf85"},
+    {file = "numpy_quaternion-2022.4.3-cp311-cp311-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:1a82205a785be37c1a2ae28dd13c02a6aaf43e7a1f3ac4cb57f6efc2d2e5d8a1"},
+    {file = "numpy_quaternion-2022.4.3-cp311-cp311-musllinux_1_1_i686.whl", hash = "sha256:accbe7758561a4bb3bd486b5f754b9983bc1be17ee517feb715d7e363833407f"},
+    {file = "numpy_quaternion-2022.4.3-cp311-cp311-musllinux_1_1_x86_64.whl", hash = "sha256:7d97d22a082caa924f2ebd998563437884e1f578c5cdb8ba001abc60d2909922"},
+    {file = "numpy_quaternion-2022.4.3-cp311-cp311-win32.whl", hash = "sha256:75c734f4b3f887f465da3571afeff924781f53dbf39c8da199fb860b9f4dc3ec"},
+    {file = "numpy_quaternion-2022.4.3-cp311-cp311-win_amd64.whl", hash = "sha256:a0aaa74a13799e13bb9b6a65964401260f7a5482d2f7e50f5e564c8866f8b96f"},
+    {file = "numpy_quaternion-2022.4.3-cp38-cp38-macosx_10_9_universal2.whl", hash = "sha256:8761f80fc4f510147bf690d494668f0944a2d590e2c5ada9d7c62af6a46e81ad"},
+    {file = "numpy_quaternion-2022.4.3-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:e34ed9c325dcd631b67dcf30b6f493528228622bc8b8b9abfaf68166fc367151"},
+    {file = "numpy_quaternion-2022.4.3-cp38-cp38-macosx_11_0_arm64.whl", hash = "sha256:4b685200964fd9e654c12cc298d5d086ef0a0313ee2b17d6b9ff29a3a880d803"},
+    {file = "numpy_quaternion-2022.4.3-cp38-cp38-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:8d635131afbd49dafa9463c78bf1a298c9de35cc759e6008647c714780e68de7"},
+    {file = "numpy_quaternion-2022.4.3-cp38-cp38-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:71a5f6fbf64001369f178168a46287dce33157947272073258d20e846b0f40a4"},
+    {file = "numpy_quaternion-2022.4.3-cp38-cp38-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:9b17ebddb0bd3fe646fc56b0e8693a92561e704be541bc3dcb4282988ebb01ed"},
+    {file = "numpy_quaternion-2022.4.3-cp38-cp38-musllinux_1_1_i686.whl", hash = "sha256:1ebd03fb341ae3f837d6d9d96df25b1c4bc0dafd9ffcb562eebdae29496f175e"},
+    {file = "numpy_quaternion-2022.4.3-cp38-cp38-musllinux_1_1_x86_64.whl", hash = "sha256:4f07823341642943d24cddc10f07cb4e32e10f5cc033fb42aa2f181e8bf0699f"},
+    {file = "numpy_quaternion-2022.4.3-cp38-cp38-win32.whl", hash = "sha256:556c32f082bb97aab9f41f7154b4d7f004a22c3187f056e78d17bf818644804f"},
+    {file = "numpy_quaternion-2022.4.3-cp38-cp38-win_amd64.whl", hash = "sha256:ccf9b0fc0e6b2a1f6c5a0bf2e5affbc588cc09d5ba585d176bd92e9f4bdfd7a1"},
+    {file = "numpy_quaternion-2022.4.3-cp39-cp39-macosx_10_9_universal2.whl", hash = "sha256:0fc5aed22a2170eb2c65aa3a0d10c08883ec9fdc35d10c110d38811f736d609a"},
+    {file = "numpy_quaternion-2022.4.3-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:d35e7bdc02025601d21830c6419e1317059083e1a3ccab68df5113b167e3fc61"},
+    {file = "numpy_quaternion-2022.4.3-cp39-cp39-macosx_11_0_arm64.whl", hash = "sha256:f9a7ed1ee9954e06e81847600eefa11d162e9cbbd386a0c693f0f681ec731133"},
+    {file = "numpy_quaternion-2022.4.3-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:334376b88dcede4263f1338b4ab40e1124c7a8fc8f81e3c3e1070cc0f5da10a7"},
+    {file = "numpy_quaternion-2022.4.3-cp39-cp39-manylinux_2_5_i686.manylinux1_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:4605a23c57fead0c20623e55b473fa233b082b5ed4d83553da6c2cb83541f428"},
+    {file = "numpy_quaternion-2022.4.3-cp39-cp39-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:a3b4ed4ca225c7f5965ddc18a8cba0f7ea8406a869872d18d1f9900420ebdd38"},
+    {file = "numpy_quaternion-2022.4.3-cp39-cp39-musllinux_1_1_i686.whl", hash = "sha256:ded4c4122481b465e46374d9087da280d712d7ea500b34fc03ae854cfc3c86b5"},
+    {file = "numpy_quaternion-2022.4.3-cp39-cp39-musllinux_1_1_x86_64.whl", hash = "sha256:e4b28a372b1362b75a23d3abf08fcc5a77c950aa554136137c5f2cd5d3a45edb"},
+    {file = "numpy_quaternion-2022.4.3-cp39-cp39-win32.whl", hash = "sha256:158df059771f5c2baa2fa43f166be30c0507aacea7df1c6fd67eb4c404b3fae3"},
+    {file = "numpy_quaternion-2022.4.3-cp39-cp39-win_amd64.whl", hash = "sha256:2ebb925346ee4a7c1ac3d9d00383950ad610d7cc672445b7b7f67e0a3a03df40"},
+]
+
+[package.dependencies]
+numpy = ">=1.13"
+
+[package.extras]
+docs = ["mkdocs", "mktheapidocs[plugin]", "pymdown-extensions"]
+numba = ["llvmlite (<0.32.0)", "numba", "numba (<0.49.0)"]
+scipy = ["scipy"]
+testing = ["pytest", "pytest-cov"]
+
+[[package]]
 name = "packaging"
 version = "23.1"
 description = "Core utilities for Python packages"
@@ -2292,4 +2351,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.11,<3.13"
-content-hash = "cdb9396e1a179afd58094fe7d51e66489e1e7d6c00431efff67b66a212bcd543"
+content-hash = "2d1348bd5ad4322f322f986222b3ee40676154d69e49fa14795e7273ea7d8746"
