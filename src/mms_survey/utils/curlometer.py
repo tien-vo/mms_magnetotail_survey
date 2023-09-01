@@ -1,9 +1,8 @@
 __all__ = ["curlometer"]
 
+import astropy.units as u
 import numpy as np
 import xarray as xr
-import astropy.units as u
-
 from tvolib.numeric import curlometer as np_curlometer
 
 
@@ -21,9 +20,15 @@ def curlometer(
     # Sanity checks
     Q_unit = Q1.attrs["units"]
     R_unit = R1.attrs["units"]
-    same_Q_unit = Q_unit == Q2.attrs["units"] == Q3.attrs["units"] == Q4.attrs["units"]
-    same_R_unit = R_unit == R2.attrs["units"] == R3.attrs["units"] == R4.attrs["units"]
-    assert same_Q_unit and same_R_unit, "Input quantities must have compatible units"
+    same_Q_unit = (
+        Q_unit == Q2.attrs["units"] == Q3.attrs["units"] == Q4.attrs["units"]
+    )
+    same_R_unit = (
+        R_unit == R2.attrs["units"] == R3.attrs["units"] == R4.attrs["units"]
+    )
+    assert (
+        same_Q_unit and same_R_unit
+    ), "Input quantities must have compatible units"
 
     # Interpolate everything to Q1 time
     components = ["x", "y", "z"]

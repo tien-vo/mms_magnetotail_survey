@@ -16,7 +16,7 @@ from numcodecs import Blosc
 
 work_dir = Path(__file__).resolve().parent / ".." / ".." / ".."
 data_dir = work_dir / "data"
-store = zarr.NestedDirectoryStore(data_dir / "database.zarr")
+store = zarr.DirectoryStore(data_dir)
 compressor = Blosc(cname="zstd", clevel=9)
 
 

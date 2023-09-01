@@ -141,7 +141,9 @@ class BaseLoader(ABC):
             return
 
         with ThreadPool(nodes=parallel) as pool:
-            with tqdm(total=len(file_list)) as progress_bar:
+            with tqdm(
+                total=len(file_list), dynamic_ncols=True
+            ) as progress_bar:
                 for msg in pool.uimap(_helper, file_list):
                     if msg is not None:
                         progress_bar.write(msg)
