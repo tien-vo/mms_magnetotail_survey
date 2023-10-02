@@ -1,6 +1,7 @@
 __all__ = ["BaseLoader"]
 
 import os
+import logging
 from abc import ABC, abstractmethod
 from tempfile import NamedTemporaryFile
 
@@ -8,14 +9,14 @@ import numpy as np
 import pandas as pd
 import requests
 from pathos.threading import ThreadPool
-from tqdm import tqdm
+from tqdm.contrib.logging import tqdm_logging_redirect as tqdm
 
-from mms_survey.utils.io import dataset_is_ok
-
-BYTE_TO_GIGABYTE = 9.313e-10
+from mms_survey.utils.units import u_
+from mms_survey.utils.io import dataset_is_processed
 
 
 class BaseLoader(ABC):
+    r"""Base class for querying data from LASP MMS Science Data Center"""
     server = "https://lasp.colorado.edu/mms/sdc/public/files/api/v1"
 
     def __init__(
@@ -29,8 +30,35 @@ class BaseLoader(ABC):
         data_level: None | str | list = None,
         product: None | str | list = None,
         query_type: str = "science",
-        skip_ok_dataset: bool = False,
+        skip_processed_data: bool = False,
     ):
+        r"""
+        Class instantiation requires MMS SDC query parameters
+        (see https://lasp.colorado.edu/mms/sdc/public/about/how-to/)
+
+        Parameters
+        ----------
+        start_date: str
+            Query start date (MMS SDC API equivalence: start_date)
+        end_date: str
+            Query end date (MMS SDC API equivalence: end_date)
+        probe: None (default), str, or list of str
+            MMS probe name (MMS SDC API equivalence: sc_id)
+        instrument: None (default), str, or list of str
+            MMS instrument name (MMS SDC API equivalence: instrument_id)
+        data_rate: None (default), str, or list of str
+            Data rate mode (MMS SDC API equivalence: data_rate_mode)
+        data_type: None (default), str, or list of str
+            Data descriptor (MMS SDC API equivalence: descriptor)
+        data_level: None (default), str, or list of str
+            Data level (MMS SDC API equivalence: data_level)
+        product: None (default), str, or list of str
+            Ancillary product (MMS SDC API equivalence: product)
+        query_type: str
+            Type of query ("science" or "ancillary")
+        skip_processed_data: bool
+            Tag for skipping processed data
+        """
         self.start_date = start_date
         self.end_date = end_date
         self.probe = probe
@@ -40,9 +68,23 @@ class BaseLoader(ABC):
         self.data_level = data_level
         self.product = product
         self.query_type = query_type
-        self.skip_ok_dataset = skip_ok_dataset
+        self.skip_processed_data = skip_processed_data
 
     def get_payload(self, file: None | str = None) -> dict:
+        r"""
+        Construct HTTP payload from class properties, which are
+        ignored if a particular file name is provided.
+
+        Parameter
+        ---------
+        file: None (default) or str
+            File name (MMS SDC API equivalence: file)
+
+        Return
+        ------
+        payload: dict
+            Dictionary for HTTP request containing payload information
+        """
         if file is None:
             payload = {
                 "start_date": self.start_date,
@@ -59,6 +101,14 @@ class BaseLoader(ABC):
         return payload
 
     def get_file_list(self) -> list:
+        r"""
+        Return list of file names relevant to payload information
+
+        Return
+        ------
+        file_list: list
+            List of file names
+        """
         response = requests.get(
             url=f"{self.server}/file_info/{self.query_type}",
             params=self.get_payload(),
@@ -68,16 +118,17 @@ class BaseLoader(ABC):
 
         file_info = response.json()["files"]
         file_list = list(map(lambda x: x["file_name"], file_info))
-        file_size = sum(list(map(lambda x: x["file_size"], file_info)))
-        print(
-            f"{self.string_id}: Query found {len(file_list)} files with"
-            f" total size = {BYTE_TO_GIGABYTE * file_size:.4f} GB",
-            flush=True,
+        file_size = sum(list(map(lambda x: x["file_size"], file_info))) * u_.B
+        logging.info(
+            f"{self.string_id} Found {len(file_list)} files,"
+            f" total size = {file_size.to(u_.GB):.4f}."
         )
         return file_list
 
     def download_file(self, file: str) -> str:
         local_file_name = None
+
+        # `local_file_name` is set here if `file` downloads successfully
         with NamedTemporaryFile(delete=False, mode="wb") as temp_file:
             temp_file_name = temp_file.name
             for _ in range(3):
@@ -87,9 +138,7 @@ class BaseLoader(ABC):
                         params=self.get_payload(file=file),
                         timeout=60.0,
                     )
-                    file_size = np.int64(
-                        response.headers.get("content-length")
-                    )
+                    file_size = int(response.headers.get("content-length"))
                     temp_file.write(response.content)
                     download_size = os.path.getsize(temp_file_name)
                     if file_size == download_size:
@@ -101,6 +150,8 @@ class BaseLoader(ABC):
                     requests.Timeout,
                 ):
                     pass
+            else:
+                logging.warning(f"Giving up downloading {file}!")
 
         if local_file_name is None:
             os.unlink(temp_file_name)
@@ -108,7 +159,7 @@ class BaseLoader(ABC):
 
     def should_skip(self, group: str) -> bool:
         """Called before download to determine if dataset is present"""
-        return self.skip_ok_dataset and dataset_is_ok(group)
+        return self.skip_processed_data and dataset_is_processed(group)
 
     @abstractmethod
     def get_metadata(self, file: str) -> dict:
@@ -123,39 +174,30 @@ class BaseLoader(ABC):
         def _helper(file: str):
             metadata = self.get_metadata(file)
             if self.should_skip(metadata["group"]):
-                return f"{file} already processed. Skipping..."
+                logging.info(f"{file} already processed. Skipping...")
+                return
 
             temp_file = self.download_file(file)
             if temp_file is not None:
-                msg = self.process_file(temp_file, metadata)
+                self.process_file(temp_file, metadata)
                 os.unlink(temp_file)
-                if msg is None:
-                    return f"Processed {file}"
-                else:
-                    return msg
-            else:
-                return f"Issues encountered. {file} not downloaded!"
+                logging.info(f"Processed {file}")
 
         file_list = self.get_file_list()
         if dry_run:
             return
 
         with ThreadPool(nodes=parallel) as pool:
-            with tqdm(
-                total=len(file_list), dynamic_ncols=True
-            ) as progress_bar:
-                for msg in pool.uimap(_helper, file_list):
-                    if msg is not None:
-                        progress_bar.write(msg)
-                    progress_bar.update()
+            with tqdm(total=len(file_list), dynamic_ncols=True) as pbar:
+                for _ in pool.uimap(_helper, file_list):
+                    pbar.update()
 
     @property
     def string_id(self) -> str:
-        return (
-            f"({self.start_date},{self.end_date},"
-            f"{self.probe},{self.instrument},{self.data_rate},"
-            f"{self.data_type},{self.data_level},{self.product})"
-        )
+        if self.query_type == "science":
+            return f"({self.probe}-{self.instrument} query)"
+        else:
+            return f"({self.product} query)"
 
     @property
     def start_date(self) -> str:

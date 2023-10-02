@@ -3,7 +3,7 @@ __all__ = [
     "store",
     "compressor",
     "fix_epoch_metadata",
-    "dataset_is_ok",
+    "dataset_is_processed",
 ]
 
 from pathlib import Path
@@ -35,9 +35,9 @@ def fix_epoch_metadata(
     return dataset
 
 
-def dataset_is_ok(group: str) -> bool:
+def dataset_is_processed(group: str) -> bool:
     database = zarr.open(store)
     try:
-        return database[group].attrs["ok"]
+        return database[group].attrs["processed"]
     except KeyError:
         return False

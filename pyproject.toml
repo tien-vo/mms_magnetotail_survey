@@ -6,7 +6,7 @@ build-backend = "poetry.core.masonry.api"
 name = "mms-magnetotail-survey"
 version = "0.2.0"
 description = "Contains Python code for processing MMS data during magnetotail seasons"
-license = "GPL-3.0"
+license = "GPL-3.0-only"
 authors = ["Tien Vo <tien.a.vo@proton.me>"]
 readme = "README.md"
 packages = [{include = "mms_survey", from="src"}]
@@ -23,6 +23,7 @@ cdflib = "^1.1.0"
 dask = "^2023.8.1"
 tvolib = "^0.4.0"
 numpy-quaternion = "^2022.4.3"
+pint-xarray = "^0.3"
 
 [tool.poetry.group.dev]
 optional = true

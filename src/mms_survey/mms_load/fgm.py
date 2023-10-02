@@ -1,6 +1,7 @@
 __all__ = ["LoadFluxGateMagnetometer"]
 
 import os
+import logging
 
 from cdflib.xarray import cdf_to_xarray
 
@@ -17,7 +18,7 @@ class LoadFluxGateMagnetometer(BaseLoader):
         probe: str = "mms1",
         data_rate: str = "srvy",
         data_level: str = "l2",
-        skip_ok_dataset: bool = False,
+        skip_processed_data: bool = False,
     ):
         super().__init__(
             instrument="fgm",
@@ -29,7 +30,7 @@ class LoadFluxGateMagnetometer(BaseLoader):
             data_level=data_level,
             product=None,
             query_type="science",
-            skip_ok_dataset=skip_ok_dataset,
+            skip_processed_data=skip_processed_data,
         )
 
     def get_metadata(self, file: str) -> dict:
@@ -46,13 +47,13 @@ class LoadFluxGateMagnetometer(BaseLoader):
 
     def process_file(self, file: str, metadata: dict):
         if metadata["instrument"] != self.instrument:
-            return f"{file} is not in FGM dataset!"
+            logging.warning(f"{file} is not in FGM dataset!")
+            return
 
         # Load file and fix metadata
         ds = cdf_to_xarray(file, to_datetime=True, fillval_to_nan=True)
-        ds = fix_epoch_metadata(
-            ds, vars=["Epoch", "Epoch_state"]
-        ).reset_coords()
+        ds = fix_epoch_metadata(ds, vars=["Epoch", "Epoch_state"])
+        ds = ds.reset_coords()
         ds = ds.rename_dims(dict(dim0="space"))
         ds = ds.assign_coords({"space": ["x", "y", "z", "mag"]})
 
@@ -70,12 +71,12 @@ class LoadFluxGateMagnetometer(BaseLoader):
                 f"{pfx}_flag_{sfx}": "flag",
             }
         )
-        ds = ds[list(vars.values())]
-        ds.attrs["ok"] = True
+        ds = ds[list(vars.values())].pint.quantify()
+        ds.attrs["processed"] = True
 
         # Save
         encoding = {x: {"compressor": compressor} for x in ds}
-        ds.to_zarr(
+        ds.pint.dequantify().to_zarr(
             mode="w",
             store=store,
             group=metadata["group"],
