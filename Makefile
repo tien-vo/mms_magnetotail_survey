@@ -1,6 +1,6 @@
 NAME := mms_survey
 MAMBA := $(shell command -v micromamba 2> /dev/null)
-CONDA_LOCK := conda-osx-64.lock
+CONDA_LOCK := conda-lock.yml
 POETRY_LOCK := poetry.lock
 
 .DEFAULT_GOAL := help
@@ -17,7 +17,7 @@ install: pyproject.toml $(POETRY_LOCK) $(CONDA_LOCK)
 	exit 1; \
 	fi
 	@echo "Creating virtual environment from $(CONDA_LOCK) ..."
-	@micromamba create --quiet --yes --override-channels --name ${NAME} --file conda-linux-64.lock
+	@micromamba create --quiet --yes --override-channels --name ${NAME} --file $(CONDA_LOCK)
 	@echo "Installing packages from $(POETRY_LOCK) ..."
 	@micromamba run -n ${NAME} poetry install
 	@echo "Done installation!"
