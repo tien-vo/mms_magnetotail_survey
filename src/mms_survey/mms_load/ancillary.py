@@ -8,7 +8,7 @@ import requests
 import xarray as xr
 
 from mms_survey.utils.units import u_
-from mms_survey.utils.io import compressor, store
+from mms_survey.utils.io import compressor, raw_store
 
 from .base import BaseLoader
 
@@ -35,8 +35,7 @@ class LoadTetrahedronQualityFactor(BaseLoader):
         )
 
     def get_metadata(self, file: str) -> dict:
-        name = os.path.splitext(file)[0]
-        _, product, start, end = name.split("_")
+        _, product, start, end = os.path.splitext(file)[0].split("_")
         return {
             "product": product,
             "start": start,
@@ -61,10 +60,13 @@ class LoadTetrahedronQualityFactor(BaseLoader):
         )
 
         # Save
+        ds = ds.pint.dequantify()
+        ds.attrs["start_date"] = str(ds.time.values[0])
+        ds.attrs["end_date"] = str(ds.time.values[-1])
         encoding = {x: {"compressor": compressor} for x in ds}
-        ds.pint.dequantify().to_zarr(
+        ds.to_zarr(
             mode="w",
-            store=store,
+            store=raw_store,
             group=metadata["group"],
             encoding=encoding,
             consolidated=False,

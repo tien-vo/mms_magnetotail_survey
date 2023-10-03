@@ -6,9 +6,10 @@ import logging
 import zarr
 from cdflib.xarray import cdf_to_xarray
 
-from mms_survey.utils.io import compressor, fix_epoch_metadata, store
+from mms_survey.utils.io import compressor, raw_store
 
 from .base import BaseLoader
+from .utils import process_epoch_metadata
 
 
 class LoadMagneticEphemerisCoordinates(BaseLoader):
@@ -52,7 +53,8 @@ class LoadMagneticEphemerisCoordinates(BaseLoader):
 
         # Load file and fix metadata
         ds = cdf_to_xarray(file, to_datetime=True, fillval_to_nan=True)
-        ds = fix_epoch_metadata(ds, vars=["Epoch"]).reset_coords()
+        ds = process_epoch_metadata(ds, epoch_vars=["Epoch"])
+        ds = ds.reset_coords()
         ds = ds.rename_dims(dict(dim0="quaternion", dim2="space"))
         ds = ds.assign_coords(
             {
@@ -82,10 +84,11 @@ class LoadMagneticEphemerisCoordinates(BaseLoader):
         ds.attrs["processed"] = True
 
         # Save
+        ds = ds.pint.dequantify()
         encoding = {x: {"compressor": compressor} for x in ds}
-        ds.pint.dequantify().to_zarr(
+        ds.to_zarr(
             mode="w",
-            store=store,
+            store=raw_store,
             group=metadata["group"],
             encoding=encoding,
             consolidated=False,
