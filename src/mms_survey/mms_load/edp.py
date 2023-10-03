@@ -1,6 +1,7 @@
 __all__ = ["LoadElectricDoubleProbes"]
 
 import os
+import logging
 
 from cdflib.xarray import cdf_to_xarray
 
@@ -18,7 +19,7 @@ class LoadElectricDoubleProbes(BaseLoader):
         data_rate: str = "srvy",
         data_type: str = "dce",
         data_level: str = "l2",
-        skip_ok_dataset: bool = False,
+        skip_processed_data: bool = False,
     ):
         super().__init__(
             instrument="edp",
@@ -30,7 +31,7 @@ class LoadElectricDoubleProbes(BaseLoader):
             data_level=data_level,
             product=None,
             query_type="science",
-            skip_ok_dataset=skip_ok_dataset,
+            skip_processed_data=skip_processed_data,
         )
 
     def get_metadata(self, file: str) -> dict:
@@ -56,7 +57,8 @@ class LoadElectricDoubleProbes(BaseLoader):
 
     def process_file(self, file: str, metadata: dict):
         if metadata["instrument"] != self.instrument:
-            return f"{file} is not in EDP dataset!"
+            logging.warning(f"{file} is not in EDP dataset!")
+            return
 
         # Load file and fix epoch metadata
         ds = cdf_to_xarray(file, to_datetime=True, fillval_to_nan=True)
@@ -86,12 +88,12 @@ class LoadElectricDoubleProbes(BaseLoader):
             )
         else:
             raise NotImplementedError()
-        ds = ds[list(vars.values())]
-        ds.attrs["ok"] = True
+        ds = ds[list(vars.values())].pint.quantify()
+        ds.attrs["processed"] = True
 
         # Save
         encoding = {x: {"compressor": compressor} for x in ds}
-        ds.to_zarr(
+        ds.pint.dequantify().to_zarr(
             mode="w",
             store=store,
             group=metadata["group"],
@@ -101,5 +103,5 @@ class LoadElectricDoubleProbes(BaseLoader):
 
 
 if __name__ == "__main__":
-    d = LoadElectricDoubleProbes(data_type="scpot")
+    d = LoadElectricDoubleProbes(data_type="dce")
     d.download()

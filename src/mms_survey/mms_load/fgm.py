@@ -1,6 +1,7 @@
 __all__ = ["LoadFluxGateMagnetometer"]
 
 import os
+import logging
 
 from cdflib.xarray import cdf_to_xarray
 
@@ -18,7 +19,7 @@ class LoadFluxGateMagnetometer(BaseLoader):
         probe: str = "mms1",
         data_rate: str = "srvy",
         data_level: str = "l2",
-        skip_up_to_date_dataset: bool = False,
+        skip_processed_data: bool = False,
     ):
         super().__init__(
             instrument="fgm",
@@ -30,7 +31,7 @@ class LoadFluxGateMagnetometer(BaseLoader):
             data_level=data_level,
             product=None,
             query_type="science",
-            skip_up_to_date_dataset=skip_up_to_date_dataset,
+            skip_processed_data=skip_processed_data,
         )
 
     def get_metadata(self, file: str) -> dict:
@@ -47,14 +48,15 @@ class LoadFluxGateMagnetometer(BaseLoader):
 
     def process_file(self, file: str, metadata: dict):
         if metadata["instrument"] != self.instrument:
-            return f"{file} is not in FGM dataset!"
+            logging.warning(f"{file} is not in FGM dataset!")
+            return
 
         # Load file and fix metadata
         ds = cdf_to_xarray(file, to_datetime=True, fillval_to_nan=True)
-        ds = process_epoch_metadata(ds, epoch_vars=["Epoch", "Epoch_state"])
+        ds = fix_epoch_metadata(ds, vars=["Epoch", "Epoch_state"])
+        ds = ds.reset_coords()
         ds = ds.rename_dims(dict(dim0="space"))
         ds = ds.assign_coords({"space": ["x", "y", "z", "mag"]})
-        ds = ds.reset_coords()
 
         # Rename variables and remove unwanted variables
         pfx = f"{metadata['probe']}_{metadata['instrument']}"
@@ -70,7 +72,7 @@ class LoadFluxGateMagnetometer(BaseLoader):
                 f"{pfx}_flag_{sfx}": "flag",
             }
         )
-        ds = ds[list(vars.values())]
+        ds = ds[list(vars.values())].pint.quantify()
 
         # Remove some unnecessary data attributes
         keys_to_remove = [
@@ -94,14 +96,14 @@ class LoadFluxGateMagnetometer(BaseLoader):
         ds["R_gse"].attrs["standard_name"] = "R GSE"
         ds["R_gsm"].attrs["standard_name"] = "R GSM"
         ds["flag"].attrs["standard_name"] = "Flag"
-        ds.attrs["up_to_date"] = True
+        ds.attrs["processed"] = True
 
         # Save
         ds.attrs["start_date"] = str(ds.time.values[0])
         ds.attrs["end_date"] = str(ds.time.values[-1])
         encoding = {x: {"compressor": compressor} for x in ds}
         ds = ds.chunk(chunks={"time": 250_000})
-        ds.to_zarr(
+        ds.pint.dequantify().to_zarr(
             mode="w",
             store=raw_store,
             group=metadata["group"],

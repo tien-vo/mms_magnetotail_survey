@@ -1,6 +1,7 @@
 __all__ = ["LoadMagneticEphemerisCoordinates"]
 
 import os
+import logging
 
 import zarr
 from cdflib.xarray import cdf_to_xarray
@@ -18,7 +19,7 @@ class LoadMagneticEphemerisCoordinates(BaseLoader):
         probe: str = "mms1",
         data_rate: str = "srvy",
         data_level: str = "l2",
-        skip_ok_dataset: bool = False,
+        skip_processed_data: bool = False,
     ):
         super().__init__(
             instrument="mec",
@@ -30,7 +31,7 @@ class LoadMagneticEphemerisCoordinates(BaseLoader):
             data_level=data_level,
             product=None,
             query_type="science",
-            skip_ok_dataset=skip_ok_dataset,
+            skip_processed_data=skip_processed_data,
         )
 
     def get_metadata(self, file: str) -> dict:
@@ -46,7 +47,8 @@ class LoadMagneticEphemerisCoordinates(BaseLoader):
 
     def process_file(self, file: str, metadata: str):
         if metadata["instrument"] != self.instrument:
-            return f"{file} is not in EDP dataset!"
+            logging.warning(f"{file} is not in MEC dataset!")
+            return
 
         # Load file and fix metadata
         ds = cdf_to_xarray(file, to_datetime=True, fillval_to_nan=True)
@@ -76,12 +78,12 @@ class LoadMagneticEphemerisCoordinates(BaseLoader):
                 f"{pfx}_quat_eci_to_gsm": "Q_eci_to_gsm",
             }
         )
-        ds = ds[list(vars.values())]
-        ds.attrs["ok"] = True
+        ds = ds[list(vars.values())].pint.quantify()
+        ds.attrs["processed"] = True
 
         # Save
         encoding = {x: {"compressor": compressor} for x in ds}
-        ds.to_zarr(
+        ds.pint.dequantify().to_zarr(
             mode="w",
             store=store,
             group=metadata["group"],

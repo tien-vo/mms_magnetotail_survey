@@ -7,7 +7,7 @@ __all__ = [
     "raw_store",
     "process_store",
     "fix_epoch_metadata",
-    "up_to_date_dataset",
+    "dataset_is_processed",
 ]
 
 from pathlib import Path
@@ -43,9 +43,9 @@ def fix_epoch_metadata(
     return dataset
 
 
-def up_to_date_dataset(group: str) -> bool:
-    ds = zarr.open(raw_store)
+def dataset_is_processed(group: str) -> bool:
+    database = zarr.open(store)
     try:
-        return ds[group].attrs["up_to_date"]
+        return database[group].attrs["processed"]
     except KeyError:
         return False
