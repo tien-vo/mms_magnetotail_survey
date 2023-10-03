@@ -6,12 +6,12 @@ from abc import ABC, abstractmethod
 from tempfile import NamedTemporaryFile
 
 import numpy as np
+import astropy.units as u
 import pandas as pd
 import requests
 from pathos.threading import ThreadPool
 from tqdm.contrib.logging import tqdm_logging_redirect as tqdm
 
-from mms_survey.utils.units import u_
 from mms_survey.utils.io import dataset_is_processed
 
 
@@ -69,6 +69,7 @@ class BaseLoader(ABC):
         self.product = product
         self.query_type = query_type
         self.skip_processed_data = skip_processed_data
+        self.compression_factor = 1.0
 
     def get_payload(self, file: None | str = None) -> dict:
         r"""
@@ -118,10 +119,11 @@ class BaseLoader(ABC):
 
         file_info = response.json()["files"]
         file_list = list(map(lambda x: x["file_name"], file_info))
-        file_size = sum(list(map(lambda x: x["file_size"], file_info))) * u_.B
+        file_size = sum(list(map(lambda x: x["file_size"], file_info))) * u.B
         logging.info(
             f"{self.string_id} Found {len(file_list)} files,"
-            f" total size = {file_size.to(u_.GB):.4f}."
+            f" total size = {file_size.to(u.GB):.4f}, will be compressed"
+            f" down to ~{file_size.to(u.GB) * self.compression_factor:.4f}"
         )
         return file_list
 

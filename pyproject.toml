@@ -23,7 +23,12 @@ cdflib = "^1.1.0"
 dask = "^2023.8.1"
 tvolib = "^0.4.0"
 numpy-quaternion = "^2022.4.3"
-pint-xarray = "^0.3"
+
+[tool.poetry.group.test]
+optional = true
+
+[tool.poetry.group.test.dependencies]
+pytest = "^7.4.2"
 
 [tool.poetry.group.dev]
 optional = true

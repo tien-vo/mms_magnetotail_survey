@@ -33,6 +33,7 @@ class LoadFluxGateMagnetometer(BaseLoader):
             query_type="science",
             skip_processed_data=skip_processed_data,
         )
+        self.compression_factor = 0.259
 
     def get_metadata(self, file: str) -> dict:
         name = os.path.splitext(file)[0]
@@ -58,6 +59,7 @@ class LoadFluxGateMagnetometer(BaseLoader):
         ds = ds.reset_coords()
         ds = ds.rename_dims(dict(dim0="space"))
         ds = ds.assign_coords({"space": ["x", "y", "z", "mag"]})
+        ds = ds.drop_sel(space="mag")
 
         # Rename variables and remove unwanted variables
         pfx = f"{metadata['probe']}_{metadata['instrument']}"
@@ -73,7 +75,7 @@ class LoadFluxGateMagnetometer(BaseLoader):
                 f"{pfx}_flag_{sfx}": "flag",
             }
         )
-        ds = ds[list(vars.values())].pint.quantify()
+        ds = ds[list(vars.values())]
 
         # Remove some unnecessary data attributes
         keys_to_remove = [
@@ -100,11 +102,12 @@ class LoadFluxGateMagnetometer(BaseLoader):
         ds.attrs["processed"] = True
 
         # Split ds in two and save
-        ds_fgm = ds.drop_dims("eph_time").pint.dequantify()
-        ds_fgm = ds_fgm.drop_duplicates("time").sortby("time")
+        ds_fgm = ds.drop_dims("eph_time")
+        ds_fgm = ds_fgm.drop_duplicates("time")
+        ds_fgm = ds_fgm.sortby("time")
+        ds_fgm = ds_fgm.chunk(chunks={"time": 250_000})
         ds_fgm.attrs["start_date"] = str(ds_fgm.time.values[0])
         ds_fgm.attrs["end_date"] = str(ds_fgm.time.values[-1])
-        ds_fgm = ds_fgm.chunk(chunks={"time": 250_000})
         encoding = {x: {"compressor": compressor} for x in ds_fgm}
         ds_fgm.to_zarr(
             mode="w",
@@ -114,9 +117,11 @@ class LoadFluxGateMagnetometer(BaseLoader):
             consolidated=False,
         )
 
-        ds_eph = ds.drop_dims("time").rename({"eph_time": "time"})
-        ds_eph = ds_eph.drop_duplicates("time").sortby("time")
-        ds_eph = ds_eph.pint.dequantify()
+        ds_eph = ds.drop_dims("time")
+        ds_eph = ds_eph.rename({"eph_time": "time"})
+        ds_eph = ds_eph.drop_duplicates("time")
+        ds_eph = ds_eph.sortby("time")
+        ds_eph = ds_eph.chunk(chunks={"time": len(ds_eph.time)})
         ds_eph.attrs["start_date"] = str(ds_eph.time.values[0])
         ds_eph.attrs["end_date"] = str(ds_eph.time.values[-1])
         encoding = {x: {"compressor": compressor} for x in ds_eph}

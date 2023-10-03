@@ -1,6 +1,5 @@
 import sys
 import logging
-import pint_xarray
 from os import environ
 
 _fmt = (

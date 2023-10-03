@@ -34,6 +34,7 @@ class LoadMagneticEphemerisCoordinates(BaseLoader):
             query_type="science",
             skip_processed_data=skip_processed_data,
         )
+        self.compression_factor = 0.24
 
     def get_metadata(self, file: str) -> dict:
         name = os.path.splitext(file)[0]
@@ -80,11 +81,10 @@ class LoadMagneticEphemerisCoordinates(BaseLoader):
                 f"{pfx}_quat_eci_to_gsm": "Q_eci_to_gsm",
             }
         )
-        ds = ds[list(vars.values())].pint.quantify()
+        ds = ds[list(vars.values())]
         ds.attrs["processed"] = True
 
         # Save
-        ds = ds.pint.dequantify()
         encoding = {x: {"compressor": compressor} for x in ds}
         ds.to_zarr(
             mode="w",

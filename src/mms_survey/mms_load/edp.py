@@ -90,13 +90,13 @@ class LoadElectricDoubleProbes(BaseLoader):
             )
         else:
             raise NotImplementedError()
-        ds = ds[list(vars.values())].pint.quantify()
+        ds = ds[list(vars.values())]
         ds.attrs["processed"] = True
 
         # Save
         ds = ds.drop_duplicates("time").sortby("time")
         encoding = {x: {"compressor": compressor} for x in ds}
-        ds.pint.dequantify().to_zarr(
+        ds.to_zarr(
             mode="w",
             store=raw_store,
             group=metadata["group"],

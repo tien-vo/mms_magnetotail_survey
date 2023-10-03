@@ -7,7 +7,6 @@ import pandas as pd
 import requests
 import xarray as xr
 
-from mms_survey.utils.units import u_
 from mms_survey.utils.io import compressor, raw_store
 
 from .base import BaseLoader
@@ -49,8 +48,8 @@ class LoadTetrahedronQualityFactor(BaseLoader):
         time = pd.to_datetime(data[:, 0], format="%Y-%j/%H:%M:%S.%f")
         ds = xr.Dataset(
             data_vars={
-                "tqf": (["time"], data[:, 2].astype("f4") * u_.Unit("")),
-                "scale": (["time"], data[:, 3].astype("i4") * u_.Unit("")),
+                "tqf": (["time"], data[:, 2].astype("f4")),
+                "scale": (["time"], data[:, 3].astype("i4")),
             },
             coords={
                 "time": time,
@@ -60,7 +59,6 @@ class LoadTetrahedronQualityFactor(BaseLoader):
         )
 
         # Save
-        ds = ds.pint.dequantify()
         ds.attrs["start_date"] = str(ds.time.values[0])
         ds.attrs["end_date"] = str(ds.time.values[-1])
         encoding = {x: {"compressor": compressor} for x in ds}
