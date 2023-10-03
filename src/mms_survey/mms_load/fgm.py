@@ -4,9 +4,10 @@ import os
 
 from cdflib.xarray import cdf_to_xarray
 
-from mms_survey.utils.io import compressor, fix_epoch_metadata, store
+from mms_survey.utils.io import compressor, raw_store
 
 from .base import BaseLoader
+from .utils import process_epoch_metadata
 
 
 class LoadFluxGateMagnetometer(BaseLoader):
@@ -17,7 +18,7 @@ class LoadFluxGateMagnetometer(BaseLoader):
         probe: str = "mms1",
         data_rate: str = "srvy",
         data_level: str = "l2",
-        skip_ok_dataset: bool = False,
+        skip_up_to_date_dataset: bool = False,
     ):
         super().__init__(
             instrument="fgm",
@@ -29,7 +30,7 @@ class LoadFluxGateMagnetometer(BaseLoader):
             data_level=data_level,
             product=None,
             query_type="science",
-            skip_ok_dataset=skip_ok_dataset,
+            skip_up_to_date_dataset=skip_up_to_date_dataset,
         )
 
     def get_metadata(self, file: str) -> dict:
@@ -50,11 +51,10 @@ class LoadFluxGateMagnetometer(BaseLoader):
 
         # Load file and fix metadata
         ds = cdf_to_xarray(file, to_datetime=True, fillval_to_nan=True)
-        ds = fix_epoch_metadata(
-            ds, vars=["Epoch", "Epoch_state"]
-        ).reset_coords()
+        ds = process_epoch_metadata(ds, epoch_vars=["Epoch", "Epoch_state"])
         ds = ds.rename_dims(dict(dim0="space"))
         ds = ds.assign_coords({"space": ["x", "y", "z", "mag"]})
+        ds = ds.reset_coords()
 
         # Rename variables and remove unwanted variables
         pfx = f"{metadata['probe']}_{metadata['instrument']}"
@@ -62,7 +62,7 @@ class LoadFluxGateMagnetometer(BaseLoader):
         ds = ds.rename(
             vars := {
                 "Epoch": "time",
-                "Epoch_state": "ephemeris_time",
+                "Epoch_state": "eph_time",
                 f"{pfx}_b_gse_{sfx}": "B_gse",
                 f"{pfx}_b_gsm_{sfx}": "B_gsm",
                 f"{pfx}_r_gse_{sfx}": "R_gse",
@@ -71,13 +71,39 @@ class LoadFluxGateMagnetometer(BaseLoader):
             }
         )
         ds = ds[list(vars.values())]
-        ds.attrs["ok"] = True
+
+        # Remove some unnecessary data attributes
+        keys_to_remove = [
+            "UNITS",
+            "DEPEND_0",
+            "DISPLAY_TYPE",
+            "FIELDNAM",
+            "FORMAT",
+            "LABL_PTR_1",
+            "LABL_AXIS",
+            "long_name",
+            "REPRESENTATION_1",
+        ]
+        for var in ds:
+            for key in keys_to_remove:
+                if key in ds[var].attrs:
+                    del ds[var].attrs[key]
+
+        ds["B_gse"].attrs["standard_name"] = "B GSE"
+        ds["B_gsm"].attrs["standard_name"] = "B GSM"
+        ds["R_gse"].attrs["standard_name"] = "R GSE"
+        ds["R_gsm"].attrs["standard_name"] = "R GSM"
+        ds["flag"].attrs["standard_name"] = "Flag"
+        ds.attrs["up_to_date"] = True
 
         # Save
+        ds.attrs["start_date"] = str(ds.time.values[0])
+        ds.attrs["end_date"] = str(ds.time.values[-1])
         encoding = {x: {"compressor": compressor} for x in ds}
+        ds = ds.chunk(chunks={"time": 250_000})
         ds.to_zarr(
             mode="w",
-            store=store,
+            store=raw_store,
             group=metadata["group"],
             encoding=encoding,
             consolidated=False,

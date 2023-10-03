@@ -1,9 +1,13 @@
 __all__ = [
-    "data_dir",
-    "store",
     "compressor",
+    "data_dir",
+    "plot_dir",
+    "raw_dir",
+    "process_dir",
+    "raw_store",
+    "process_store",
     "fix_epoch_metadata",
-    "dataset_is_ok",
+    "up_to_date_dataset",
 ]
 
 from pathlib import Path
@@ -14,10 +18,14 @@ import xarray as xr
 import zarr
 from numcodecs import Blosc
 
+compressor = Blosc(cname="zstd", clevel=9)
 work_dir = Path(__file__).resolve().parent / ".." / ".." / ".."
 data_dir = work_dir / "data"
-store = zarr.DirectoryStore(data_dir)
-compressor = Blosc(cname="zstd", clevel=9)
+plot_dir = work_dir / "plots"
+raw_dir = data_dir / "raw"
+process_dir = data_dir / "processed"
+raw_store = zarr.DirectoryStore(raw_dir)
+process_store = zarr.NestedDirectoryStore(process_dir)
 
 
 def fix_epoch_metadata(
@@ -35,9 +43,9 @@ def fix_epoch_metadata(
     return dataset
 
 
-def dataset_is_ok(group: str) -> bool:
-    database = zarr.open(store)
+def up_to_date_dataset(group: str) -> bool:
+    ds = zarr.open(raw_store)
     try:
-        return database[group].attrs["ok"]
+        return ds[group].attrs["up_to_date"]
     except KeyError:
         return False

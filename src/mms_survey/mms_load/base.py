@@ -10,7 +10,7 @@ import requests
 from pathos.threading import ThreadPool
 from tqdm import tqdm
 
-from mms_survey.utils.io import dataset_is_ok
+from mms_survey.utils.io import up_to_date_dataset
 
 BYTE_TO_GIGABYTE = 9.313e-10
 
@@ -29,7 +29,7 @@ class BaseLoader(ABC):
         data_level: None | str | list = None,
         product: None | str | list = None,
         query_type: str = "science",
-        skip_ok_dataset: bool = False,
+        skip_up_to_date_dataset: bool = False,
     ):
         self.start_date = start_date
         self.end_date = end_date
@@ -40,7 +40,7 @@ class BaseLoader(ABC):
         self.data_level = data_level
         self.product = product
         self.query_type = query_type
-        self.skip_ok_dataset = skip_ok_dataset
+        self.skip_up_to_date_dataset = skip_up_to_date_dataset
 
     def get_payload(self, file: None | str = None) -> dict:
         if file is None:
@@ -87,9 +87,7 @@ class BaseLoader(ABC):
                         params=self.get_payload(file=file),
                         timeout=60.0,
                     )
-                    file_size = np.int64(
-                        response.headers.get("content-length")
-                    )
+                    file_size = np.int64(response.headers.get("content-length"))
                     temp_file.write(response.content)
                     download_size = os.path.getsize(temp_file_name)
                     if file_size == download_size:
@@ -108,7 +106,7 @@ class BaseLoader(ABC):
 
     def should_skip(self, group: str) -> bool:
         """Called before download to determine if dataset is present"""
-        return self.skip_ok_dataset and dataset_is_ok(group)
+        return self.skip_up_to_date_dataset and up_to_date_dataset(group)
 
     @abstractmethod
     def get_metadata(self, file: str) -> dict:
@@ -141,9 +139,7 @@ class BaseLoader(ABC):
             return
 
         with ThreadPool(nodes=parallel) as pool:
-            with tqdm(
-                total=len(file_list), dynamic_ncols=True
-            ) as progress_bar:
+            with tqdm(total=len(file_list), dynamic_ncols=True) as progress_bar:
                 for msg in pool.uimap(_helper, file_list):
                     if msg is not None:
                         progress_bar.write(msg)
