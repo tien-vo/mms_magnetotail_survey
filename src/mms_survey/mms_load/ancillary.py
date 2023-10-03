@@ -60,10 +60,11 @@ class LoadTetrahedronQualityFactor(BaseLoader):
         )
 
         # Save
+        ds = ds.pint.dequantify()
         ds.attrs["start_date"] = str(ds.time.values[0])
         ds.attrs["end_date"] = str(ds.time.values[-1])
         encoding = {x: {"compressor": compressor} for x in ds}
-        ds.pint.dequantify().to_zarr(
+        ds.to_zarr(
             mode="w",
             store=raw_store,
             group=metadata["group"],

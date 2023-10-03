@@ -53,7 +53,7 @@ class LoadFluxGateMagnetometer(BaseLoader):
 
         # Load file and fix metadata
         ds = cdf_to_xarray(file, to_datetime=True, fillval_to_nan=True)
-        ds = fix_epoch_metadata(ds, vars=["Epoch", "Epoch_state"])
+        ds = process_epoch_metadata(ds, epoch_vars=["Epoch", "Epoch_state"])
         ds = ds.reset_coords()
         ds = ds.rename_dims(dict(dim0="space"))
         ds = ds.assign_coords({"space": ["x", "y", "z", "mag"]})
@@ -99,11 +99,12 @@ class LoadFluxGateMagnetometer(BaseLoader):
         ds.attrs["processed"] = True
 
         # Save
+        ds = ds.pint.dequantify()
         ds.attrs["start_date"] = str(ds.time.values[0])
         ds.attrs["end_date"] = str(ds.time.values[-1])
-        encoding = {x: {"compressor": compressor} for x in ds}
         ds = ds.chunk(chunks={"time": 250_000})
-        ds.pint.dequantify().to_zarr(
+        encoding = {x: {"compressor": compressor} for x in ds}
+        ds.to_zarr(
             mode="w",
             store=raw_store,
             group=metadata["group"],

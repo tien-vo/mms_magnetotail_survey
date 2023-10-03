@@ -5,9 +5,10 @@ import logging
 
 from cdflib.xarray import cdf_to_xarray
 
-from mms_survey.utils.io import compressor, fix_epoch_metadata, store
+from mms_survey.utils.io import compressor, raw_store
 
 from .base import BaseLoader
+from .utils import process_epoch_metadata
 
 
 class LoadElectricDoubleProbes(BaseLoader):
@@ -64,7 +65,8 @@ class LoadElectricDoubleProbes(BaseLoader):
         ds = cdf_to_xarray(file, to_datetime=True, fillval_to_nan=True)
         pfx = f"{metadata['probe']}_{metadata['instrument']}"
         sfx = f"{metadata['data_rate']}_{metadata['data_level']}"
-        ds = fix_epoch_metadata(ds, vars=[f"{pfx}_epoch_{sfx}"]).reset_coords()
+        ds = process_epoch_metadata(ds, vars=[f"{pfx}_epoch_{sfx}"])
+        ds = ds.reset_coords()
 
         # Rename variables and remove unwanted variables
         if metadata["data_type"] == "dce":
@@ -95,7 +97,7 @@ class LoadElectricDoubleProbes(BaseLoader):
         encoding = {x: {"compressor": compressor} for x in ds}
         ds.pint.dequantify().to_zarr(
             mode="w",
-            store=store,
+            store=raw_store,
             group=metadata["group"],
             encoding=encoding,
             consolidated=False,
