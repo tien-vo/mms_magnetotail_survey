@@ -1,6 +1,6 @@
-from mms_survey.mms_load.fgm import LoadFluxGateMagnetometer
+from mms_survey.mms_load.edp import LoadElectricDoubleProbes
 
-d = LoadFluxGateMagnetometer(
+d = LoadElectricDoubleProbes(
     start_date="2017-01-01",
     end_date="2021-01-01",
     probe=["mms1", "mms2", "mms3", "mms4"],

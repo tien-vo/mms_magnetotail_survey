@@ -65,7 +65,7 @@ class LoadElectricDoubleProbes(BaseLoader):
         ds = cdf_to_xarray(file, to_datetime=True, fillval_to_nan=True)
         pfx = f"{metadata['probe']}_{metadata['instrument']}"
         sfx = f"{metadata['data_rate']}_{metadata['data_level']}"
-        ds = process_epoch_metadata(ds, vars=[f"{pfx}_epoch_{sfx}"])
+        ds = process_epoch_metadata(ds, epoch_vars=[f"{pfx}_epoch_{sfx}"])
         ds = ds.reset_coords()
 
         # Rename variables and remove unwanted variables
@@ -94,6 +94,7 @@ class LoadElectricDoubleProbes(BaseLoader):
         ds.attrs["processed"] = True
 
         # Save
+        ds = ds.drop_duplicates("time").sortby("time")
         encoding = {x: {"compressor": compressor} for x in ds}
         ds.pint.dequantify().to_zarr(
             mode="w",
@@ -105,5 +106,5 @@ class LoadElectricDoubleProbes(BaseLoader):
 
 
 if __name__ == "__main__":
-    d = LoadElectricDoubleProbes(data_type="dce")
+    d = LoadElectricDoubleProbes(data_type="scpot")
     d.download()

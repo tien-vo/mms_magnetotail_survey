@@ -44,6 +44,7 @@ class LoadFluxGateMagnetometer(BaseLoader):
             "data_rate": data_rate,
             "data_level": data_level,
             "group": f"/{data_rate}/{instrument}/{probe}/{tid}",
+            "eph_group": f"/{data_rate}/{instrument}_eph/{probe}/{tid}",
         }
 
     def process_file(self, file: str, metadata: dict):
@@ -98,16 +99,31 @@ class LoadFluxGateMagnetometer(BaseLoader):
         ds["flag"].attrs["standard_name"] = "Flag"
         ds.attrs["processed"] = True
 
-        # Save
-        ds = ds.pint.dequantify()
-        ds.attrs["start_date"] = str(ds.time.values[0])
-        ds.attrs["end_date"] = str(ds.time.values[-1])
-        ds = ds.chunk(chunks={"time": 250_000})
-        encoding = {x: {"compressor": compressor} for x in ds}
-        ds.to_zarr(
+        # Split ds in two and save
+        ds_fgm = ds.drop_dims("eph_time").pint.dequantify()
+        ds_fgm = ds_fgm.drop_duplicates("time").sortby("time")
+        ds_fgm.attrs["start_date"] = str(ds_fgm.time.values[0])
+        ds_fgm.attrs["end_date"] = str(ds_fgm.time.values[-1])
+        ds_fgm = ds_fgm.chunk(chunks={"time": 250_000})
+        encoding = {x: {"compressor": compressor} for x in ds_fgm}
+        ds_fgm.to_zarr(
             mode="w",
             store=raw_store,
             group=metadata["group"],
+            encoding=encoding,
+            consolidated=False,
+        )
+
+        ds_eph = ds.drop_dims("time").rename({"eph_time": "time"})
+        ds_eph = ds_eph.drop_duplicates("time").sortby("time")
+        ds_eph = ds_eph.pint.dequantify()
+        ds_eph.attrs["start_date"] = str(ds_eph.time.values[0])
+        ds_eph.attrs["end_date"] = str(ds_eph.time.values[-1])
+        encoding = {x: {"compressor": compressor} for x in ds_eph}
+        ds_eph.to_zarr(
+            mode="w",
+            store=raw_store,
+            group=metadata["eph_group"],
             encoding=encoding,
             consolidated=False,
         )
