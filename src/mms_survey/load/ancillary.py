@@ -1,5 +1,3 @@
-__all__ = ["LoadTetrahedronQualityFactor"]
-
 import os
 
 import numpy as np

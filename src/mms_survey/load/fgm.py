@@ -1,5 +1,3 @@
-__all__ = ["LoadFluxGateMagnetometer"]
-
 import logging
 import os
 

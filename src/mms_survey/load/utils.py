@@ -1,7 +1,3 @@
-__all__ = [
-    "process_epoch_metadata",
-]
-
 import numpy as np
 import pandas.api.types as pd
 import xarray as xr

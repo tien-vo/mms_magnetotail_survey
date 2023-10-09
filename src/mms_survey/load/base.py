@@ -1,5 +1,3 @@
-__all__ = ["BaseLoader"]
-
 import logging
 import os
 from abc import ABC, abstractmethod

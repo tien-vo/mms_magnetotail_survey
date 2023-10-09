@@ -1,5 +1,3 @@
-__all__ = ["LoadElectricDoubleProbes"]
-
 import logging
 import os
 

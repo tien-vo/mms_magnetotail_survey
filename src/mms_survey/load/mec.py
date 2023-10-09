@@ -1,5 +1,3 @@
-__all__ = ["LoadMagneticEphemerisCoordinates"]
-
 import logging
 import os
 

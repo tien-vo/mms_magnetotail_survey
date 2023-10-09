@@ -30,9 +30,7 @@ def quaternion_rotate(V: xr.DataArray, Q: xr.DataArray, inverse: bool = False):
         out_coord = "TO_COORDINATE_SYSTEM"
 
     # ---- Sanity checks
-    assert (
-        "space" in V.coords
-    ), "Input vector must have spatial coordinates"
+    assert "space" in V.coords, "Input vector must have spatial coordinates"
     assert (
         "quaternion" in Q.coords
     ), "Input quaternion must have quaternion coordinates"
