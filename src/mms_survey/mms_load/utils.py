@@ -3,11 +3,13 @@ __all__ = [
 ]
 
 import numpy as np
-import xarray as xr
 import pandas.api.types as pd
+import xarray as xr
 
 
-def process_epoch_metadata(dataset: xr.Dataset, epoch_vars: list) -> xr.Dataset:
+def process_epoch_metadata(
+    dataset: xr.Dataset, epoch_vars: list
+) -> xr.Dataset:
     """
     Assuming CDF time conversion is handled correctly by cdflib. With this function
     we remove some unnecessary metadata.

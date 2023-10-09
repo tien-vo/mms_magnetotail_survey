@@ -1,12 +1,12 @@
 __all__ = ["BaseLoader"]
 
-import os
 import logging
+import os
 from abc import ABC, abstractmethod
 from tempfile import NamedTemporaryFile
 
-import numpy as np
 import astropy.units as u
+import numpy as np
 import pandas as pd
 import requests
 from pathos.threading import ThreadPool

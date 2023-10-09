@@ -1,7 +1,7 @@
 __all__ = ["LoadElectricDoubleProbes"]
 
-import os
 import logging
+import os
 
 from cdflib.xarray import cdf_to_xarray
 

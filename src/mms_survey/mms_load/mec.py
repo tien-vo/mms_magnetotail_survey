@@ -1,7 +1,7 @@
 __all__ = ["LoadMagneticEphemerisCoordinates"]
 
-import os
 import logging
+import os
 
 import zarr
 from cdflib.xarray import cdf_to_xarray
