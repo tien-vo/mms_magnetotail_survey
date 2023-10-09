@@ -36,8 +36,10 @@ class LoadElectricDoubleProbes(BaseLoader):
         )
         if data_type == "dce":
             self.compression_factor = 0.288
-        else:
+        elif data_type == "scpot":
             self.compression_factor = 0.09
+        else:
+            raise NotImplementedError()
 
     def get_metadata(self, file: str) -> dict:
         name = os.path.splitext(file)[0]
@@ -98,7 +100,8 @@ class LoadElectricDoubleProbes(BaseLoader):
         ds.attrs["processed"] = True
 
         # Save
-        ds = ds.drop_duplicates("time").sortby("time")
+        ds = ds.drop_duplicates("time")
+        ds = ds.sortby("time")
         ds = ds.chunk(chunks={"time": 250_000})
         encoding = {x: {"compressor": compressor} for x in ds}
         ds.to_zarr(
