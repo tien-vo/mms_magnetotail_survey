@@ -56,4 +56,5 @@ def quaternion_rotate(V: xr.DataArray, Q: xr.DataArray, inverse: bool = False):
     V_rotated[...] = np_q.as_float_array(_V_rotated)
 
     V_rotated.attrs["COORDINATE_SYSTEM"] = Q.attrs[out_coord]
-    return V_rotated.sel(space=["x", "y", "z"])
+    V_rotated = V_rotated.sel(space=["x", "y", "z"])
+    return V_rotated.compute()
