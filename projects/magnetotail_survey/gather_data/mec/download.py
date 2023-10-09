@@ -1,4 +1,4 @@
-from mms_survey.mms_load.mec import LoadMagneticEphemerisCoordinates
+from mms_survey.load.mec import LoadMagneticEphemerisCoordinates
 
 d = LoadMagneticEphemerisCoordinates(
     start_date="2017-01-01",

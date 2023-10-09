@@ -1,4 +1,4 @@
-from mms_survey.mms_load.edp import LoadElectricDoubleProbes
+from mms_survey.load.edp import LoadElectricDoubleProbes
 
 d = LoadElectricDoubleProbes(
     start_date="2017-01-01",

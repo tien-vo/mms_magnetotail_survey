@@ -1,4 +1,4 @@
-from mms_survey.mms_load.fgm import LoadFluxGateMagnetometer
+from mms_survey.load.fgm import LoadFluxGateMagnetometer
 
 d = LoadFluxGateMagnetometer(
     start_date="2017-01-01",
