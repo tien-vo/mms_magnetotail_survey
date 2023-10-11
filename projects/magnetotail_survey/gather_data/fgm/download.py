@@ -7,4 +7,4 @@ d = LoadFluxGateMagnetometer(
     data_rate="srvy",
     skip_processed_data=True,
 )
-d.download(parallel=8, dry_run=True)
+d.download(parallel=8, dry_run=False)

@@ -2,17 +2,17 @@ import zarr
 import numpy as np
 import xarray as xr
 
-from pathos.pools import ProcessPool as Pool
+from pathos.pools import ThreadPool as Pool
 
-from mms_survey.utils.io import store, compressor
 from mms_survey.utils.cotrans import quaternion_rotate
+from mms_survey.utils.io import raw_store, compressor
 
 
 def process(group: str):
     _, _, _, _, probe, tid = group.split("/")
     mec_group = f"/srvy/mec/{probe}/{tid}"
-    ds_edp = xr.open_zarr(store, group=group, consolidated=False)
-    ds_mec = xr.open_zarr(store, group=mec_group, consolidated=False)
+    ds_edp = xr.open_zarr(raw_store, group=group, consolidated=False)
+    ds_mec = xr.open_zarr(raw_store, group=mec_group, consolidated=False)
     encoding = dict()
 
     kw = dict(time=ds_edp.time, kwargs=dict(fill_value=np.nan))
@@ -28,9 +28,11 @@ def process(group: str):
         encoding["E_gsm"] = {"compressor": compressor}
         ds_edp = ds_edp.assign(E_gsm=E_gsm)
 
+    # Save
+    ds_edp = ds_edp.chunk(chunks={"time": 250_000})
     ds_edp.to_zarr(
         mode="a",
-        store=store,
+        store=raw_store,
         group=group,
         encoding=encoding,
         consolidated=False,
@@ -39,7 +41,7 @@ def process(group: str):
 
 
 if __name__ == "__main__":
-    f = zarr.open(store)
+    f = zarr.open(raw_store)
 
     #process("/fast/edp/dce/mms1/20170726")
     with Pool() as pool:
