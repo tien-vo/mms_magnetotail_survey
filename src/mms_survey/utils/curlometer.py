@@ -35,7 +35,6 @@ def curlometer(
     Q2 = Q2.interp(**kw).sel(space=components)
     Q3 = Q3.interp(**kw).sel(space=components)
     Q4 = Q4.interp(**kw).sel(space=components)
-    kw = dict(ephemeris_time=Q1.time, kwargs=dict(fill_value=np.nan))
     R1 = R1.interp(**kw).sel(space=components)
     R2 = R2.interp(**kw).sel(space=components)
     R3 = R3.interp(**kw).sel(space=components)
@@ -54,6 +53,7 @@ def curlometer(
         R3.values,
         R4.values,
     )
+
     attrs = dict(units=str(u.Unit(Q_unit) / u.Unit(R_unit)))
     return xr.Dataset(
         data_vars={

@@ -11,13 +11,13 @@ work_dir = Path(__file__).resolve().parent / ".." / ".." / ".."
 data_dir = work_dir / "data"
 plot_dir = work_dir / "plots"
 raw_dir = data_dir / "raw"
-process_dir = data_dir / "processed"
+processed_dir = data_dir / "processed"
 raw_store = zarr.DirectoryStore(raw_dir)
-process_store = zarr.NestedDirectoryStore(process_dir)
+processed_store = zarr.NestedDirectoryStore(processed_dir)
 
 
-def dataset_is_processed(group: str) -> bool:
-    database = zarr.open(raw_store)
+def dataset_is_processed(group: str, store=raw_store) -> bool:
+    database = zarr.open(store)
     try:
         return database[group].attrs["processed"]
     except KeyError:
