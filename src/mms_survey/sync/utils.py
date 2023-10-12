@@ -31,3 +31,32 @@ def process_epoch_metadata(
         dataset[var].attrs["standard_name"] = "Time"
 
     return dataset
+
+
+def clean_metadata(dataset: xr.Dataset) -> xr.Dataset:
+    keys_to_remove = [
+        "UNITS",
+        "DEPEND_0",
+        "DISPLAY_TYPE",
+        "FIELDNAM",
+        "FORMAT",
+        "LABL_PTR_1",
+        "REPRESENTATION_1",
+        "SI_CONVERSION",
+        "LABLAXIS",
+        "VAR_TYPE",
+        "standard_name",
+        "long_name",
+    ]
+    for var in dataset:
+        for key in keys_to_remove:
+            if key in dataset[var].attrs:
+                del dataset[var].attrs[key]
+
+    for attrs in [dataset.attrs] + [dataset[var].attrs for var in dataset]:
+        for key, value in attrs.items():
+            if isinstance(value, (list, np.ndarray)):
+                if len(value) == 1:
+                    attrs[key] = value[0]
+
+    return dataset

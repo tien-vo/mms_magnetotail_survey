@@ -7,14 +7,16 @@ import astropy.units as u
 import numpy as np
 import pandas as pd
 import requests
+import zarr
+from numcodecs.abc import Codec
 from pathos.threading import ThreadPool
 from tqdm.contrib.logging import tqdm_logging_redirect as tqdm
 
-from mms_survey.utils.io import dataset_is_processed
+from mms_survey.utils.io import default_store, default_compressor
 
 
-class BaseLoader(ABC):
-    r"""Base class for querying data from LASP MMS Science Data Center"""
+class BaseSync(ABC):
+    r"""Base class for syncing MMS data from LASP Science Data Center"""
     server = "https://lasp.colorado.edu/mms/sdc/public/files/api/v1"
 
     def __init__(
@@ -28,7 +30,9 @@ class BaseLoader(ABC):
         data_level: None | str | list = None,
         product: None | str | list = None,
         query_type: str = "science",
-        skip_processed_data: bool = False,
+        update: bool = False,
+        store: zarr._storage.store.Store = default_store,
+        compressor: Codec = default_compressor,
     ):
         r"""
         Class instantiation requires MMS SDC query parameters
@@ -54,8 +58,8 @@ class BaseLoader(ABC):
             Ancillary product (MMS SDC API equivalence: product)
         query_type: str
             Type of query ("science" or "ancillary")
-        skip_processed_data: bool
-            Tag for skipping processed data
+        update: bool
+            Toggle to force updating local data
         """
         self.start_date = start_date
         self.end_date = end_date
@@ -66,8 +70,10 @@ class BaseLoader(ABC):
         self.data_level = data_level
         self.product = product
         self.query_type = query_type
-        self.skip_processed_data = skip_processed_data
+        self.update = update
         self.compression_factor = 1.0
+        self.store = store
+        self.compressor = compressor
 
     def get_payload(self, file: None | str = None) -> dict:
         r"""
@@ -119,9 +125,9 @@ class BaseLoader(ABC):
         file_list = list(map(lambda x: x["file_name"], file_info))
         file_size = sum(list(map(lambda x: x["file_size"], file_info))) * u.B
         logging.info(
-            f"{self.string_id} Found {len(file_list)} files,"
-            f" total size = {file_size.to(u.GB):.4f}, will be compressed"
-            f" down to ~{file_size.to(u.GB) * self.compression_factor:.4f}"
+            f"Found {len(file_list)} files with total size ="
+            f" {file_size.to(u.GB):.4f}, will be compressed"
+            f" down to {file_size.to(u.GB) * self.compression_factor:.4f}"
         )
         return file_list
 
@@ -157,9 +163,17 @@ class BaseLoader(ABC):
             os.unlink(temp_file_name)
         return local_file_name
 
-    def should_skip(self, group: str) -> bool:
-        """Called before download to determine if dataset is present"""
-        return self.skip_processed_data and dataset_is_processed(group)
+    def is_updated(self, metadata: dict) -> bool:
+        """Called before download to determine if dataset is updated"""
+        try:
+            ds = zarr.open(self.store)
+            group = metadata["group"]
+            local_version = ds[group].attrs["Data_version"].replace("v", "")
+            remote_version = metadata["version"].replace("v", "")
+            updated = local_version == remote_version
+        except KeyError:
+            updated = False
+        return updated
 
     @abstractmethod
     def get_metadata(self, file: str) -> dict:
@@ -173,8 +187,8 @@ class BaseLoader(ABC):
     def download(self, parallel: int = 1, dry_run: bool = False):
         def _helper(file: str):
             metadata = self.get_metadata(file)
-            if self.should_skip(metadata["group"]):
-                logging.info(f"{file} already processed. Skipping...")
+            if not self.update and self.is_updated(metadata):
+                logging.info(f"{file} is up-to-date")
                 return
 
             temp_file = self.download_file(file)
@@ -191,13 +205,6 @@ class BaseLoader(ABC):
             with tqdm(total=len(file_list), dynamic_ncols=True) as pbar:
                 for _ in pool.uimap(_helper, file_list):
                     pbar.update()
-
-    @property
-    def string_id(self) -> str:
-        if self.query_type == "science":
-            return f"({self.probe}-{self.instrument} query)"
-        else:
-            return f"({self.product} query)"
 
     @property
     def start_date(self) -> str:

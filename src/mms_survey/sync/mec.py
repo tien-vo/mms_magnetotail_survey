@@ -2,23 +2,27 @@ import logging
 import os
 
 import zarr
+from numcodecs.abc import Codec
 from cdflib.xarray import cdf_to_xarray
 
-from mms_survey.utils.io import compressor, raw_store
+from mms_survey.utils.io import default_store, default_compressor
 
-from .base import BaseLoader
-from .utils import process_epoch_metadata
+from .base import BaseSync
+from .utils import process_epoch_metadata, clean_metadata
 
 
-class LoadMagneticEphemerisCoordinates(BaseLoader):
+class SyncMagneticEphemerisCoordinates(BaseSync):
     def __init__(
         self,
         start_date: str = "2017-07-26",
         end_date: str = "2017-07-26",
         probe: str = "mms1",
         data_rate: str = "srvy",
+        data_type: str = "epht89q",
         data_level: str = "l2",
-        skip_processed_data: bool = False,
+        update: bool = False,
+        store: zarr._storage.store.Store = default_store,
+        compressor: Codec = default_compressor,
     ):
         super().__init__(
             instrument="mec",
@@ -26,30 +30,40 @@ class LoadMagneticEphemerisCoordinates(BaseLoader):
             end_date=end_date,
             probe=probe,
             data_rate=data_rate,
-            data_type="epht89q",
+            data_type=data_type,
             data_level=data_level,
             product=None,
             query_type="science",
-            skip_processed_data=skip_processed_data,
+            update=update,
+            store=store,
+            compressor=compressor,
         )
-        self.compression_factor = 0.24
+        self.compression_factor = 0.147
 
     def get_metadata(self, file: str) -> dict:
-        name = os.path.splitext(file)[0]
-        probe, instrument, data_rate, _, _, tid, _ = name.split("_")
+        (
+            probe,
+            instrument,
+            data_rate,
+            data_level,
+            data_type,
+            time,
+            version,
+        ) = os.path.splitext(file)[0].split("_")
         return {
             "file": file,
             "probe": probe,
             "instrument": instrument,
             "data_rate": data_rate,
-            "group": f"/{data_rate}/{instrument}/{probe}/{tid}",
+            "data_level": data_level,
+            "data_type": data_type,
+            "group": (
+                f"/{probe}/{instrument}/{data_rate}/{data_level}/"
+                f"{data_type}/{time}"
+            ),
         }
 
     def process_file(self, file: str, metadata: str):
-        if metadata["instrument"] != self.instrument:
-            logging.warning(f"{file} is not in MEC dataset!")
-            return
-
         # Load file and fix metadata
         ds = cdf_to_xarray(file, to_datetime=True, fillval_to_nan=True)
         ds = process_epoch_metadata(ds, epoch_vars=["Epoch"])
@@ -70,23 +84,25 @@ class LoadMagneticEphemerisCoordinates(BaseLoader):
                 f"{pfx}_dipole_tilt": "dipole_tilt",
                 f"{pfx}_kp": "kp",
                 f"{pfx}_dst": "dst",
-                f"{pfx}_r_eci": "R_eci",
-                f"{pfx}_v_eci": "V_eci",
-                f"{pfx}_quat_eci_to_bcs": "Q_eci_to_bcs",
                 f"{pfx}_quat_eci_to_dbcs": "Q_eci_to_dbcs",
                 f"{pfx}_quat_eci_to_dsl": "Q_eci_to_dsl",
                 f"{pfx}_quat_eci_to_gse": "Q_eci_to_gse",
                 f"{pfx}_quat_eci_to_gsm": "Q_eci_to_gsm",
             }
         )
-        ds = ds[list(vars.values())]
-        ds.attrs["processed"] = True
+        ds = clean_metadata(ds[list(vars.values())])
+        ds["dipole_tilt"].attrs["standard_name"] = "Dipole tilt"
+        ds["kp"].attrs["standard_name"] = "Kp"
+        ds["dst"].attrs["standard_name"] = "Dst"
 
         # Save
-        encoding = {x: {"compressor": compressor} for x in ds}
+        ds = ds.drop_duplicates("time").sortby("time")
+        ds.attrs["start_date"] = str(ds.time.values[0])
+        ds.attrs["end_date"] = str(ds.time.values[-1])
+        encoding = {x: {"compressor": self.compressor} for x in ds}
         ds.to_zarr(
             mode="w",
-            store=raw_store,
+            store=self.store,
             group=metadata["group"],
             encoding=encoding,
             consolidated=False,
@@ -94,5 +110,5 @@ class LoadMagneticEphemerisCoordinates(BaseLoader):
 
 
 if __name__ == "__main__":
-    d = LoadMagneticEphemerisCoordinates()
+    d = SyncMagneticEphemerisCoordinates()
     d.download()

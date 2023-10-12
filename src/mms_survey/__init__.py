@@ -2,10 +2,7 @@ import logging
 import sys
 from os import environ
 
-_fmt = (
-    r"%(asctime)s [%(levelname)s] "
-    r"[%(filename)s.%(funcName)s(%(lineno)d)]: %(message)s"
-)
+_fmt = r"%(asctime)s [%(levelname)s]: %(message)s"
 logging.basicConfig(
     format=_fmt,
     level=logging.INFO if environ.get("DEBUG") is None else logging.DEBUG,
