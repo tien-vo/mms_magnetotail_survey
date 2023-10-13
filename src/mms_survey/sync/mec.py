@@ -57,6 +57,7 @@ class SyncMagneticEphemerisCoordinates(BaseSync):
             "data_rate": data_rate,
             "data_level": data_level,
             "data_type": data_type,
+            "version": version,
             "group": (
                 f"/{probe}/{instrument}/{data_rate}/{data_level}/"
                 f"{data_type}/{time}"
@@ -75,6 +76,9 @@ class SyncMagneticEphemerisCoordinates(BaseSync):
                 "quaternion": ["x", "y", "z", "w"],
             }
         )
+
+        # CDF metadata is incorrect here, so we fix it
+        ds.attrs["Data_version"] = metadata["version"]
 
         # Rename variables and remove unwanted variables
         pfx = f"{metadata['probe']}_{metadata['instrument']}"

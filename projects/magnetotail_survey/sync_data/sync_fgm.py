@@ -7,7 +7,7 @@ d = SyncFluxGateMagnetometer(
     end_date="2021-01-01",
     probe=["mms1", "mms2", "mms3", "mms4"],
     data_rate="srvy",
-    update=True,
+    update=False,
     store=zarr.DirectoryStore("/Volumes/MMS_DATA/mms_survey/raw"),
 )
-d.download(parallel=8, dry_run=True)
+d.download(parallel=8, dry_run=False)
