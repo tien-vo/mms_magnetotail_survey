@@ -82,8 +82,6 @@ class SyncElectricDoubleProbesPotential(BaseSync):
         ds = clean_metadata(ds[list(vars.values())])
         ds["V_sc"].attrs["standard_name"] = "Vsc"
 
-        print(ds)
-
         # Save
         ds = ds.drop_duplicates("time").sortby("time")
         ds = ds.chunk(chunks={"time": 250_000})

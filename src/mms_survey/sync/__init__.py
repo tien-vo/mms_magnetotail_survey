@@ -1,5 +1,6 @@
 import warnings
 
+from .mec._mec import SyncMagneticEphemerisCoordinates
 from .fgm._fgm import SyncFluxGateMagnetometer
 from .edp._dc import SyncElectricDoubleProbesDC
 from .edp._potential import SyncElectricDoubleProbesPotential
@@ -17,6 +18,7 @@ warnings.filterwarnings(
 )
 
 # Aliases
+SyncMEC = SyncMagneticEphemerisCoordinates
 SyncFGM = SyncFluxGateMagnetometer
 SyncEDPDC = SyncElectricDoubleProbesDC
 SyncEDPP = SyncElectricDoubleProbesPotential

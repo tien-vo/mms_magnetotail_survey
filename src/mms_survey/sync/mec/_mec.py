@@ -7,8 +7,8 @@ from cdflib.xarray import cdf_to_xarray
 
 from mms_survey.utils.io import default_store, default_compressor
 
-from .base import BaseSync
-from .utils import process_epoch_metadata, clean_metadata
+from ..base import BaseSync
+from ..utils import process_epoch_metadata, clean_metadata
 
 
 class SyncMagneticEphemerisCoordinates(BaseSync):
@@ -40,7 +40,7 @@ class SyncMagneticEphemerisCoordinates(BaseSync):
         )
         self.compression_factor = 0.147
 
-    def get_metadata(self, file: str) -> dict:
+    def get_file_metadata(self, file_name: str) -> dict:
         (
             probe,
             instrument,
@@ -49,9 +49,9 @@ class SyncMagneticEphemerisCoordinates(BaseSync):
             data_type,
             time,
             version,
-        ) = os.path.splitext(file)[0].split("_")
+        ) = os.path.splitext(file_name)[0].split("_")
         return {
-            "file": file,
+            "file_name": file_name,
             "probe": probe,
             "instrument": instrument,
             "data_rate": data_rate,
@@ -64,9 +64,11 @@ class SyncMagneticEphemerisCoordinates(BaseSync):
             ),
         }
 
-    def process_file(self, file: str, metadata: str):
+    def process_file(self, file_name: str, file_metadata: str):
+        pfx = "{probe}_{instrument}".format(**file_metadata)
+
         # Load file and fix metadata
-        ds = cdf_to_xarray(file, to_datetime=True, fillval_to_nan=True)
+        ds = cdf_to_xarray(file_name, to_datetime=True, fillval_to_nan=True)
         ds = process_epoch_metadata(ds, epoch_vars=["Epoch"])
         ds = ds.reset_coords()
         ds = ds.rename_dims(dict(dim0="quaternion", dim2="space"))
@@ -78,10 +80,9 @@ class SyncMagneticEphemerisCoordinates(BaseSync):
         )
 
         # CDF metadata is incorrect here, so we fix it
-        ds.attrs["Data_version"] = metadata["version"]
+        ds.attrs["Data_version"] = file_metadata["version"]
 
         # Rename variables and remove unwanted variables
-        pfx = f"{metadata['probe']}_{metadata['instrument']}"
         ds = ds.rename(
             vars := {
                 "Epoch": "time",
@@ -107,12 +108,7 @@ class SyncMagneticEphemerisCoordinates(BaseSync):
         ds.to_zarr(
             mode="w",
             store=self.store,
-            group=metadata["group"],
+            group=file_metadata["group"],
             encoding=encoding,
             consolidated=False,
         )
-
-
-if __name__ == "__main__":
-    d = SyncMagneticEphemerisCoordinates()
-    d.download()
