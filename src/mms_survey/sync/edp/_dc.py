@@ -7,11 +7,11 @@ from cdflib.xarray import cdf_to_xarray
 
 from mms_survey.utils.io import default_store, default_compressor
 
-from .base import BaseSync
-from .utils import process_epoch_metadata, clean_metadata
+from ..base import BaseSync
+from ..utils import process_epoch_metadata, clean_metadata
 
 
-class SyncElectricDoubleProbesDCE(BaseSync):
+class SyncElectricDoubleProbesDC(BaseSync):
     def __init__(
         self,
         start_date: str = "2017-07-26",
@@ -39,7 +39,7 @@ class SyncElectricDoubleProbesDCE(BaseSync):
         )
         self.compression_factor = 0.288
 
-    def get_metadata(self, file: str) -> dict:
+    def get_file_metadata(self, file_name: str) -> dict:
         (
             probe,
             instrument,
@@ -48,26 +48,25 @@ class SyncElectricDoubleProbesDCE(BaseSync):
             data_type,
             time,
             version,
-        ) = os.path.splitext(file)[0].split("_")
+        ) = os.path.splitext(file_name)[0].split("_")
         return {
-            "file": file,
+            "file_name": file_name,
             "probe": probe,
             "instrument": instrument,
             "data_rate": data_rate,
-            "data_type": data_type,
             "data_level": data_level,
             "version": version,
             "group": (
-                f"/{probe}/{instrument}_dce/{data_rate}/{data_level}/{time}"
+                f"/{probe}/{instrument}_dc/{data_rate}/{data_level}/{time}"
             ),
         }
 
-    def process_file(self, file: str, metadata: dict):
-        pfx = f"{metadata['probe']}_{metadata['instrument']}"
-        sfx = f"{metadata['data_rate']}_{metadata['data_level']}"
+    def process_file(self, file_name: str, file_metadata: dict):
+        pfx = "{probe}_{instrument}".format(**file_metadata)
+        sfx = "{data_rate}_{data_level}".format(**file_metadata)
 
         # Load file and fix epoch metadata
-        ds = cdf_to_xarray(file, to_datetime=True, fillval_to_nan=True)
+        ds = cdf_to_xarray(file_name, to_datetime=True, fillval_to_nan=True)
         ds = process_epoch_metadata(ds, epoch_vars=[f"{pfx}_epoch_{sfx}"])
         ds = ds.reset_coords()
 
@@ -92,19 +91,14 @@ class SyncElectricDoubleProbesDCE(BaseSync):
 
         # Save
         ds = ds.drop_duplicates("time").sortby("time")
-        ds = ds.chunk(chunks={"time": 250_000})
+        ds = ds.chunk(chunks={"time": 250_000, "space": 3})
         ds.attrs["start_date"] = str(ds.time.values[0])
         ds.attrs["end_date"] = str(ds.time.values[-1])
         encoding = {x: {"compressor": self.compressor} for x in ds}
         ds.to_zarr(
             mode="w",
             store=self.store,
-            group=metadata["group"],
+            group=file_metadata["group"],
             encoding=encoding,
             consolidated=False,
         )
-
-
-if __name__ == "__main__":
-    d = SyncElectricDoubleProbesDCE()
-    d.download()

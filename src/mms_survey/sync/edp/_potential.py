@@ -7,11 +7,11 @@ from cdflib.xarray import cdf_to_xarray
 
 from mms_survey.utils.io import default_store, default_compressor
 
-from .base import BaseSync
-from .utils import process_epoch_metadata, clean_metadata
+from ..base import BaseSync
+from ..utils import process_epoch_metadata, clean_metadata
 
 
-class SyncElectricDoubleProbesSCPOT(BaseSync):
+class SyncElectricDoubleProbesPotential(BaseSync):
     def __init__(
         self,
         start_date: str = "2017-07-26",
@@ -39,7 +39,7 @@ class SyncElectricDoubleProbesSCPOT(BaseSync):
         )
         self.compression_factor = 0.09
 
-    def get_metadata(self, file: str) -> dict:
+    def get_file_metadata(self, file_name: str) -> dict:
         (
             probe,
             instrument,
@@ -48,9 +48,9 @@ class SyncElectricDoubleProbesSCPOT(BaseSync):
             data_type,
             time,
             version,
-        ) = os.path.splitext(file)[0].split("_")
+        ) = os.path.splitext(file_name)[0].split("_")
         return {
-            "file": file,
+            "file_name": file_name,
             "probe": probe,
             "instrument": instrument,
             "data_rate": data_rate,
@@ -58,16 +58,17 @@ class SyncElectricDoubleProbesSCPOT(BaseSync):
             "data_level": data_level,
             "version": version,
             "group": (
-                f"/{probe}/{instrument}_scpot/{data_rate}/{data_level}/{time}"
+                f"/{probe}/{instrument}_potential/"
+                f"{data_rate}/{data_level}/{time}"
             ),
         }
 
-    def process_file(self, file: str, metadata: dict):
-        pfx = f"{metadata['probe']}_{metadata['instrument']}"
-        sfx = f"{metadata['data_rate']}_{metadata['data_level']}"
+    def process_file(self, file_name: str, file_metadata: dict):
+        pfx = "{probe}_{instrument}".format(**file_metadata)
+        sfx = "{data_rate}_{data_level}".format(**file_metadata)
 
         # Load file and fix epoch metadata
-        ds = cdf_to_xarray(file, to_datetime=True, fillval_to_nan=True)
+        ds = cdf_to_xarray(file_name, to_datetime=True, fillval_to_nan=True)
         ds = process_epoch_metadata(ds, epoch_vars=[f"{pfx}_epoch_{sfx}"])
         ds = ds.reset_coords()
 
@@ -75,11 +76,13 @@ class SyncElectricDoubleProbesSCPOT(BaseSync):
         ds = ds.drop_dims("dim0").rename(
             vars := {
                 f"{pfx}_epoch_{sfx}": "time",
-                f"{pfx}_scpot_{sfx}": "Phi",
+                f"{pfx}_scpot_{sfx}": "V_sc",
             }
         )
         ds = clean_metadata(ds[list(vars.values())])
-        ds["Phi"].attrs["standard_name"] = "Vsc"
+        ds["V_sc"].attrs["standard_name"] = "Vsc"
+
+        print(ds)
 
         # Save
         ds = ds.drop_duplicates("time").sortby("time")
@@ -90,12 +93,7 @@ class SyncElectricDoubleProbesSCPOT(BaseSync):
         ds.to_zarr(
             mode="w",
             store=self.store,
-            group=metadata["group"],
+            group=file_metadata["group"],
             encoding=encoding,
             consolidated=False,
         )
-
-
-if __name__ == "__main__":
-    d = SyncElectricDoubleProbesSCPOT()
-    d.download()
