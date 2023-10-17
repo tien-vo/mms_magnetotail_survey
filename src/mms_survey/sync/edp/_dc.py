@@ -71,22 +71,29 @@ class SyncElectricDoubleProbesDC(BaseSync):
         ds = ds.reset_coords()
 
         # Rename variables and remove unwanted variables
-        ds = ds.drop_dims("dim1")
         ds = ds.rename(
             vars := {
                 f"{pfx}_epoch_{sfx}": "time",
                 f"{pfx}_dce_gse_{sfx}": "E_gse",
+                f"{pfx}_dce_par_epar_{sfx}": "E_para",
                 f"{pfx}_dce_dsl_{sfx}": "E_dsl",
-                f"{pfx}_dce_err_{sfx}": "E_dsl_err",
                 f"{pfx}_bitmask_{sfx}": "bitmask",
             }
         )
-        ds = ds.rename_dims(dict(dim0="space"))
+        attrs = ds.E_para.attrs
+        E_para = ds.E_para.values
+        ds = ds.assign(
+            E_para=("time", E_para[:, -1]),
+            E_para_err=("time", E_para[:, 0]),
+        )
+        ds.E_para.attrs.update(**attrs)
+        ds = ds.rename_dims(dict(dim0="space")).drop_dims("dim1")
         ds = ds.assign_coords({"space": ["x", "y", "z"]})
-        ds = clean_metadata(ds[list(vars.values())])
+        ds = clean_metadata(ds[list(vars.values()) + ["E_para_err"]])
         ds["E_gse"].attrs["standard_name"] = "E GSE"
         ds["E_dsl"].attrs["standard_name"] = "E DSL"
-        ds["E_dsl_err"].attrs["standard_name"] = "E DSL error"
+        ds["E_para"].attrs["standard_name"] = "E para"
+        ds["E_para_err"].attrs["standard_name"] = "E para error"
         ds["bitmask"].attrs["standard_name"] = "Bitmask"
 
         # Save
