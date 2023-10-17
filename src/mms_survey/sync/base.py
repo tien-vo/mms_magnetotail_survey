@@ -75,14 +75,14 @@ class BaseSync(ABC):
         self.store = store
         self.compressor = compressor
 
-    def get_payload(self, file: None | str = None) -> dict:
+    def get_payload(self, file_name: None | str = None) -> dict:
         r"""
         Construct HTTP payload from class properties, which are
         ignored if a particular file name is provided.
 
         Parameter
         ---------
-        file: None (default) or str
+        file_name: None (default) or str
             File name (MMS SDC API equivalence: file)
 
         Return
@@ -90,7 +90,7 @@ class BaseSync(ABC):
         payload: dict
             Dictionary for HTTP request containing payload information
         """
-        if file is None:
+        if file_name is None:
             payload = {
                 "start_date": self.start_date,
                 "end_date": self.end_date,
@@ -102,7 +102,7 @@ class BaseSync(ABC):
                 "product": self.product,
             }
         else:
-            payload = {"file": file}
+            payload = {"file": file_name}
         return payload
 
     def get_file_list(self) -> list:
@@ -131,7 +131,7 @@ class BaseSync(ABC):
         )
         return file_list
 
-    def download_file(self, file: str) -> str:
+    def download_file(self, file_name: str) -> str:
         local_file_name = None
 
         # `local_file_name` is set here if `file` downloads successfully
@@ -141,7 +141,7 @@ class BaseSync(ABC):
                 try:
                     response = requests.get(
                         url=f"{self.server}/download/{self.query_type}",
-                        params=self.get_payload(file=file),
+                        params=self.get_payload(file_name=file_name),
                         timeout=60.0,
                     )
                     file_size = int(response.headers.get("content-length"))
@@ -157,45 +157,45 @@ class BaseSync(ABC):
                 ):
                     pass
             else:
-                logging.warning(f"Giving up downloading {file}!")
+                logging.warning(f"Giving up downloading {file_name}!")
 
         if local_file_name is None:
             os.unlink(temp_file_name)
         return local_file_name
 
-    def is_updated(self, metadata: dict) -> bool:
+    def is_updated(self, file_metadata: dict) -> bool:
         """Called before download to determine if dataset is updated"""
         try:
             ds = zarr.open(self.store)
-            group = metadata["group"]
+            group = file_metadata["group"]
             local_version = ds[group].attrs["Data_version"].replace("v", "")
-            remote_version = metadata["version"].replace("v", "")
+            remote_version = file_metadata["version"].replace("v", "")
             updated = local_version == remote_version
         except KeyError:
             updated = False
         return updated
 
     @abstractmethod
-    def get_metadata(self, file: str) -> dict:
+    def get_file_metadata(self, file_name: str) -> dict:
         raise NotImplementedError()
 
     @abstractmethod
-    def process_file(self, file: str, metadata: dict):
+    def process_file(self, file_name: str, file_metadata: dict):
         """Called after download to process data"""
         raise NotImplementedError()
 
     def download(self, parallel: int = 1, dry_run: bool = False):
-        def _helper(file: str):
-            metadata = self.get_metadata(file)
-            if not self.update and self.is_updated(metadata):
-                logging.info(f"{file} is up-to-date")
+        def _helper(file_name: str):
+            file_metadata = self.get_file_metadata(file_name)
+            if not self.update and self.is_updated(file_metadata):
+                logging.info(f"{file_name} is up-to-date")
                 return
 
-            temp_file = self.download_file(file)
+            temp_file = self.download_file(file_name)
             if temp_file is not None:
-                self.process_file(temp_file, metadata)
+                self.process_file(temp_file, file_metadata)
                 os.unlink(temp_file)
-                logging.info(f"Processed {file}")
+                logging.info(f"Processed {file_name}")
 
         file_list = self.get_file_list()
         if dry_run:

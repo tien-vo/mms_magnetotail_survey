@@ -7,8 +7,8 @@ from cdflib.xarray import cdf_to_xarray
 
 from mms_survey.utils.io import default_store, default_compressor
 
-from .base import BaseSync
-from .utils import process_epoch_metadata, clean_metadata
+from ..base import BaseSync
+from ..utils import process_epoch_metadata, clean_metadata
 
 
 class SyncFluxGateMagnetometer(BaseSync):
@@ -39,7 +39,7 @@ class SyncFluxGateMagnetometer(BaseSync):
         )
         self.compression_factor = 0.259
 
-    def get_metadata(self, file: str) -> dict:
+    def get_file_metadata(self, file_name: str) -> dict:
         (
             probe,
             instrument,
@@ -47,24 +47,30 @@ class SyncFluxGateMagnetometer(BaseSync):
             data_level,
             time,
             version,
-        ) = os.path.splitext(file)[0].split("_")
+        ) = os.path.splitext(file_name)[0].split("_")
         return {
-            "file": file,
+            "file_name": file_name,
             "probe": probe,
             "instrument": instrument,
             "data_rate": data_rate,
             "data_level": data_level,
             "version": version,
-            "group": f"/{probe}/{instrument}/{data_rate}/{data_level}/{time}",
+            "group": (
+                f"/{probe}/{instrument}_fields/"
+                f"{data_rate}/{data_level}/{time}"
+            ),
             "eph_group": (
                 f"/{probe}/{instrument}_ephemeris/"
                 f"{data_rate}/{data_level}/{time}"
             ),
         }
 
-    def process_file(self, file: str, metadata: dict):
+    def process_file(self, file_name: str, file_metadata: dict):
+        pfx = "{probe}_{instrument}".format(**file_metadata)
+        sfx = "{data_rate}_{data_level}".format(**file_metadata)
+
         # Load file and fix epoch metadata
-        ds = cdf_to_xarray(file, to_datetime=True, fillval_to_nan=True)
+        ds = cdf_to_xarray(file_name, to_datetime=True, fillval_to_nan=True)
         ds = process_epoch_metadata(ds, epoch_vars=["Epoch", "Epoch_state"])
         ds = ds.reset_coords()
 
@@ -74,8 +80,6 @@ class SyncFluxGateMagnetometer(BaseSync):
         ds = ds.drop_sel(space="mag")
 
         # Rename and remove unwanted data variables
-        pfx = f"{metadata['probe']}_{metadata['instrument']}"
-        sfx = f"{metadata['data_rate']}_{metadata['data_level']}"
         ds = ds.rename(
             vars := {
                 "Epoch": "time",
@@ -97,14 +101,14 @@ class SyncFluxGateMagnetometer(BaseSync):
         # Save FGM field measurements
         ds_field = ds.drop_dims("eph_time")
         ds_field = ds_field.drop_duplicates("time").sortby("time")
-        ds_field = ds_field.chunk(chunks={"time": 250_000})
+        ds_field = ds_field.chunk(chunks={"time": 250_000, "space": 3})
         ds_field.attrs["start_date"] = str(ds_field.time.values[0])
         ds_field.attrs["end_date"] = str(ds_field.time.values[-1])
         encoding = {x: {"compressor": self.compressor} for x in ds_field}
         ds_field.to_zarr(
             mode="w",
             store=self.store,
-            group=metadata["group"],
+            group=file_metadata["group"],
             encoding=encoding,
             consolidated=False,
         )
@@ -112,19 +116,14 @@ class SyncFluxGateMagnetometer(BaseSync):
         # Save FGM ephemeris measurements
         ds_eph = ds.drop_dims("time").rename({"eph_time": "time"})
         ds_eph = ds_eph.drop_duplicates("time").sortby("time")
-        ds_eph = ds_eph.chunk(chunks={"time": len(ds_eph.time)})
+        ds_eph = ds_eph.chunk(chunks={"time": 250_000, "space": 3})
         ds_eph.attrs["start_date"] = str(ds_eph.time.values[0])
         ds_eph.attrs["end_date"] = str(ds_eph.time.values[-1])
         encoding = {x: {"compressor": self.compressor} for x in ds_eph}
         ds_eph.to_zarr(
            mode="w",
            store=self.store,
-           group=metadata["eph_group"],
+           group=file_metadata["eph_group"],
            encoding=encoding,
            consolidated=False,
         )
-
-
-if __name__ == "__main__":
-    d = SyncFluxGateMagnetometer(update=True)
-    d.download()
