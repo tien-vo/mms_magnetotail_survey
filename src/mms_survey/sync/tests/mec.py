@@ -1,4 +1,4 @@
-from mms_survey.sync import SyncMEC
+from mms_survey.sync import SyncMec
+from mms_survey.utils.io import data_dir
 
-s = SyncMEC(update=True)
-s.download()
+SyncMec(update_local=True, store=data_dir / "test").sync()

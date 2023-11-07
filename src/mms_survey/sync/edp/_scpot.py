@@ -1,17 +1,13 @@
 import logging
-import os
+from os.path import splitext
 
-import zarr
-from numcodecs.abc import Codec
 from cdflib.xarray import cdf_to_xarray
 
-from mms_survey.utils.io import default_store, default_compressor
-
-from ..base import BaseSync
-from ..utils import process_epoch_metadata, clean_metadata
+from ..base import BaseSynchronizer
+from ..utils import clean_metadata, process_epoch_metadata
 
 
-class SyncElectricDoubleProbesPotential(BaseSync):
+class SyncElectricDoubleProbesScpot(BaseSynchronizer):
     def __init__(
         self,
         start_date: str = "2017-07-26",
@@ -19,9 +15,7 @@ class SyncElectricDoubleProbesPotential(BaseSync):
         probe: str = "mms1",
         data_rate: str = "srvy",
         data_level: str = "l2",
-        update: bool = False,
-        store: zarr._storage.store.Store = default_store,
-        compressor: Codec = default_compressor,
+        **kwargs,
     ):
         super().__init__(
             instrument="edp",
@@ -31,44 +25,47 @@ class SyncElectricDoubleProbesPotential(BaseSync):
             data_rate="fast" if data_rate == "srvy" else data_rate,
             data_type="scpot",
             data_level=data_level,
-            product=None,
             query_type="science",
-            update=update,
-            store=store,
-            compressor=compressor,
+            **kwargs,
         )
-        self.compression_factor = 0.09
+        self._compression_factor = 0.09
 
-    def get_file_metadata(self, file_name: str) -> dict:
+    def get_file_metadata(self, cdf_file_name: str) -> dict:
         (
             probe,
             instrument,
             data_rate,
             data_level,
             data_type,
-            time,
+            time_string,
             version,
-        ) = os.path.splitext(file_name)[0].split("_")
+        ) = splitext(cdf_file_name)[0].split("_")
+        assert (
+            instrument == "edp"
+        ), "Incorrect input for EDP SCPOT synchronizer!"
+        assert (
+            data_type == "scpot"
+        ), "Incorrect data type for EDP SCPOT synchronizer!"
         return {
-            "file_name": file_name,
             "probe": probe,
             "instrument": instrument,
             "data_rate": data_rate,
-            "data_type": data_type,
             "data_level": data_level,
             "version": version,
             "group": (
                 f"/{probe}/{instrument}_potential/"
-                f"{data_rate}/{data_level}/{time}"
+                f"{data_rate}/{data_level}/{time_string}"
             ),
         }
 
-    def process_file(self, file_name: str, file_metadata: dict):
+    def process_file(self, temp_file_name: str, file_metadata: dict):
         pfx = "{probe}_{instrument}".format(**file_metadata)
         sfx = "{data_rate}_{data_level}".format(**file_metadata)
 
         # Load file and fix epoch metadata
-        ds = cdf_to_xarray(file_name, to_datetime=True, fillval_to_nan=True)
+        ds = cdf_to_xarray(
+            temp_file_name, to_datetime=True, fillval_to_nan=True
+        )
         ds = process_epoch_metadata(ds, epoch_vars=[f"{pfx}_epoch_{sfx}"])
         ds = ds.reset_coords()
 

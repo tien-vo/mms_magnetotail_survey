@@ -30,7 +30,9 @@ def quaternion_rotate(V: xr.DataArray, Q: xr.DataArray, inverse: bool = False):
         out_coord = "TO_COORDINATE_SYSTEM"
 
     # ---- Sanity checks
-    assert "space" in V.coords, "Input vector must have spatial coordinates"
+    assert (
+        "rank_1_space" in V.coords
+    ), "Input vector must have rank-1 spatial coordinates"
     assert (
         "quaternion" in Q.coords
     ), "Input quaternion must have quaternion coordinates"
@@ -40,11 +42,11 @@ def quaternion_rotate(V: xr.DataArray, Q: xr.DataArray, inverse: bool = False):
 
     # numpy-quaternion uses (w, i, j, k) representation
     Q = Q.reindex({"quaternion": ["w", "x", "y", "z"]})
-    V = V.reindex({"space": ["x", "y", "z"]})
+    V = V.reindex({"rank_1_space": ["x", "y", "z"]})
 
     # Extract one spatial coordinate, assign it `w`, and concatenate into V
-    Vw = xr.zeros_like(V.sel(space="x")).assign_coords(space="w")
-    V = xr.concat([Vw, V], dim="space")
+    Vw = xr.zeros_like(V.sel(rank_1_space="x")).assign_coords(rank_1_space="w")
+    V = xr.concat([Vw, V], dim="rank_1_space")
 
     # This rotation step forces data into memory
     _Q = np_q.as_quat_array(Q)
@@ -56,5 +58,5 @@ def quaternion_rotate(V: xr.DataArray, Q: xr.DataArray, inverse: bool = False):
     V_rotated[...] = np_q.as_float_array(_V_rotated)
 
     V_rotated.attrs["COORDINATE_SYSTEM"] = Q.attrs[out_coord]
-    V_rotated = V_rotated.sel(space=["x", "y", "z"])
+    V_rotated = V_rotated.sel(rank_1_space=["x", "y", "z"])
     return V_rotated.compute()

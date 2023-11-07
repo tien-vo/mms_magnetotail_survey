@@ -1,17 +1,13 @@
 import logging
-import os
+from os.path import splitext
 
-import zarr
-from numcodecs.abc import Codec
 from cdflib.xarray import cdf_to_xarray
 
-from mms_survey.utils.io import default_store, default_compressor
-
-from ..base import BaseSync
-from ..utils import process_epoch_metadata, clean_metadata
+from ..base import BaseSynchronizer
+from ..utils import clean_metadata, process_epoch_metadata
 
 
-class SyncElectricDoubleProbesDC(BaseSync):
+class SyncElectricDoubleProbesDce(BaseSynchronizer):
     def __init__(
         self,
         start_date: str = "2017-07-26",
@@ -19,9 +15,7 @@ class SyncElectricDoubleProbesDC(BaseSync):
         probe: str = "mms1",
         data_rate: str = "srvy",
         data_level: str = "l2",
-        update: bool = False,
-        store: zarr._storage.store.Store = default_store,
-        compressor: Codec = default_compressor,
+        **kwargs,
     ):
         super().__init__(
             instrument="edp",
@@ -31,42 +25,45 @@ class SyncElectricDoubleProbesDC(BaseSync):
             data_rate="fast" if data_rate == "srvy" else data_rate,
             data_type="dce",
             data_level=data_level,
-            product=None,
             query_type="science",
-            update=update,
-            store=store,
-            compressor=compressor,
+            **kwargs,
         )
-        self.compression_factor = 0.288
+        self._compression_factor = 0.288
 
-    def get_file_metadata(self, file_name: str) -> dict:
+    def get_file_metadata(self, cdf_file_name: str) -> dict:
         (
             probe,
             instrument,
             data_rate,
             data_level,
             data_type,
-            time,
+            time_string,
             version,
-        ) = os.path.splitext(file_name)[0].split("_")
+        ) = splitext(cdf_file_name)[0].split("_")
+        assert instrument == "edp", "Incorrect input for EDP DCE synchronizer!"
+        assert (
+            data_type == "dce"
+        ), "Incorrect data type for EDP DCE synchronizer!"
         return {
-            "file_name": file_name,
             "probe": probe,
             "instrument": instrument,
             "data_rate": data_rate,
             "data_level": data_level,
             "version": version,
             "group": (
-                f"/{probe}/{instrument}_dc/{data_rate}/{data_level}/{time}"
+                f"/{probe}/{instrument}_dce/{data_rate}/"
+                f"{data_level}/{time_string}"
             ),
         }
 
-    def process_file(self, file_name: str, file_metadata: dict):
+    def process_file(self, temp_file_name: str, file_metadata: dict):
         pfx = "{probe}_{instrument}".format(**file_metadata)
         sfx = "{data_rate}_{data_level}".format(**file_metadata)
 
         # Load file and fix epoch metadata
-        ds = cdf_to_xarray(file_name, to_datetime=True, fillval_to_nan=True)
+        ds = cdf_to_xarray(
+            temp_file_name, to_datetime=True, fillval_to_nan=True
+        )
         ds = process_epoch_metadata(ds, epoch_vars=[f"{pfx}_epoch_{sfx}"])
         ds = ds.reset_coords()
 
@@ -87,8 +84,8 @@ class SyncElectricDoubleProbesDC(BaseSync):
             E_para_err=("time", E_para[:, 0]),
         )
         ds.E_para.attrs.update(**attrs)
-        ds = ds.rename_dims(dict(dim0="space")).drop_dims("dim1")
-        ds = ds.assign_coords({"space": ["x", "y", "z"]})
+        ds = ds.rename_dims(dict(dim0="rank_1_space")).drop_dims("dim1")
+        ds = ds.assign_coords({"rank_1_space": ["x", "y", "z"]})
         ds = clean_metadata(ds[list(vars.values()) + ["E_para_err"]])
         ds["E_gse"].attrs["standard_name"] = "E GSE"
         ds["E_dsl"].attrs["standard_name"] = "E DSL"
@@ -98,7 +95,7 @@ class SyncElectricDoubleProbesDC(BaseSync):
 
         # Save
         ds = ds.drop_duplicates("time").sortby("time")
-        ds = ds.chunk(chunks={"time": 250_000, "space": 3})
+        ds = ds.chunk(chunks={"time": 250_000, "rank_1_space": 3})
         ds.attrs["start_date"] = str(ds.time.values[0])
         ds.attrs["end_date"] = str(ds.time.values[-1])
         encoding = {x: {"compressor": self.compressor} for x in ds}

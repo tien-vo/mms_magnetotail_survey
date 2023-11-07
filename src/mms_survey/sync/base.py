@@ -12,53 +12,55 @@ from numcodecs.abc import Codec
 from pathos.threading import ThreadPool
 from tqdm.contrib.logging import tqdm_logging_redirect as tqdm
 
-from mms_survey.utils.io import default_store, default_compressor
+from mms_survey.utils.io import default_compressor, default_store
 
 
-class BaseSync(ABC):
-    r"""Base class for syncing MMS data from LASP Science Data Center"""
-    server = "https://lasp.colorado.edu/mms/sdc/public/files/api/v1"
+class BaseSynchronizer(ABC):
+    r"""
+    Base class for synchronizing data with LASP MMS Science Data Center
+    """
+    _api_link = "https://lasp.colorado.edu/mms/sdc/public/files/api/v1"
 
     def __init__(
         self,
         start_date: str = "2017-07-26",
         end_date: str = "2017-07-26",
-        probe: None | str | list = None,
-        instrument: None | str | list = None,
-        data_rate: None | str | list = None,
-        data_type: None | str | list = None,
-        data_level: None | str | list = None,
-        product: None | str | list = None,
+        probe: str | list | None = None,
+        instrument: str | list | None = None,
+        data_rate: str | list | None = None,
+        data_type: str | list | None = None,
+        data_level: str | list | None = None,
+        product: str | list | None = None,
         query_type: str = "science",
-        update: bool = False,
+        update_local: bool = False,
         store: zarr._storage.store.Store = default_store,
         compressor: Codec = default_compressor,
     ):
         r"""
-        Class instantiation requires MMS SDC query parameters
+        Instantiation of synchronizer requires MMS API query parameters
         (see https://lasp.colorado.edu/mms/sdc/public/about/how-to/)
 
         Parameters
         ----------
         start_date: str
-            Query start date (MMS SDC API equivalence: start_date)
+            Query start date (API equivalence: start_date)
         end_date: str
-            Query end date (MMS SDC API equivalence: end_date)
-        probe: None (default), str, or list of str
-            MMS probe name (MMS SDC API equivalence: sc_id)
-        instrument: None (default), str, or list of str
-            MMS instrument name (MMS SDC API equivalence: instrument_id)
-        data_rate: None (default), str, or list of str
-            Data rate mode (MMS SDC API equivalence: data_rate_mode)
-        data_type: None (default), str, or list of str
-            Data descriptor (MMS SDC API equivalence: descriptor)
-        data_level: None (default), str, or list of str
-            Data level (MMS SDC API equivalence: data_level)
-        product: None (default), str, or list of str
-            Ancillary product (MMS SDC API equivalence: product)
+            Query end date (API equivalence: end_date)
+        probe: str, list of str, or None (default)
+            MMS probe name (API equivalence: sc_id)
+        instrument: str, list of str, or None (default)
+            MMS instrument name (API equivalence: instrument_id)
+        data_rate: str, list of str, or None (default)
+            Data rate mode (API equivalence: data_rate_mode)
+        data_type: str, list of str, or None (default)
+            Data descriptor (API equivalence: descriptor)
+        data_level: str, list of str, or None (default)
+            Data level (API equivalence: data_level)
+        product: str, list of str, or None (default)
+            Ancillary product (API equivalence: product)
         query_type: str
             Type of query ("science" or "ancillary")
-        update: bool
+        update_local: bool
             Toggle to force updating local data
         """
         self.start_date = start_date
@@ -70,28 +72,28 @@ class BaseSync(ABC):
         self.data_level = data_level
         self.product = product
         self.query_type = query_type
-        self.update = update
-        self.compression_factor = 1.0
+        self.update_local = update_local
         self.store = store
         self.compressor = compressor
+        self._compression_factor = 1.0
 
-    def get_payload(self, file_name: None | str = None) -> dict:
+    def get_payload(self, cdf_file_name: str | None = None) -> dict:
         r"""
-        Construct HTTP payload from class properties, which are
+        Constructs HTTP payload from class properties, which are
         ignored if a particular file name is provided.
 
         Parameter
         ---------
-        file_name: None (default) or str
-            File name (MMS SDC API equivalence: file)
+        cdf_file_name: str or None (default)
+            CDF file name (API equivalence: file)
 
-        Return
-        ------
+        Returns
+        -------
         payload: dict
             Dictionary for HTTP request containing payload information
         """
-        if file_name is None:
-            payload = {
+        if cdf_file_name is None:
+            return {
                 "start_date": self.start_date,
                 "end_date": self.end_date,
                 "sc_id": self.probe,
@@ -102,54 +104,71 @@ class BaseSync(ABC):
                 "product": self.product,
             }
         else:
-            payload = {"file": file_name}
-        return payload
+            return {"file": cdf_file_name}
 
-    def get_file_list(self) -> list:
+    def get_cdf_file_list(self) -> list[str]:
         r"""
-        Return list of file names relevant to payload information
+        Get list of CDF file names relevant to payload information
 
-        Return
-        ------
-        file_list: list
+        Returns
+        -------
+        cdf_file_list: list[str]
             List of file names
         """
         response = requests.get(
-            url=f"{self.server}/file_info/{self.query_type}",
+            url=f"{self._api_link}/file_info/{self.query_type}",
             params=self.get_payload(),
             timeout=10.0,
         )
         response.raise_for_status()
 
-        file_info = response.json()["files"]
-        file_list = list(map(lambda x: x["file_name"], file_info))
-        file_size = sum(list(map(lambda x: x["file_size"], file_info))) * u.B
+        cdf_file_info = response.json()["files"]
+        cdf_file_list = list(map(lambda x: x["file_name"], cdf_file_info))
+        cdf_file_size = (
+            sum(
+                list(
+                    map(
+                        lambda x: x["file_size"],
+                        cdf_file_info,
+                    )
+                )
+            )
+            * u.B
+        ).to(u.GB)
         logging.info(
-            f"Found {len(file_list)} files with total size ="
-            f" {file_size.to(u.GB):.4f}, will be compressed"
-            f" down to {file_size.to(u.GB) * self.compression_factor:.4f}"
+            f"Downloading {len(cdf_file_list)} files with total size ="
+            f" {cdf_file_size:.4f}, will be compressed to"
+            f" {cdf_file_size * self._compression_factor:.4f}"
         )
-        return file_list
+        return cdf_file_list
 
-    def download_file(self, file_name: str) -> str:
-        local_file_name = None
+    def download_file(self, cdf_file_name: str) -> str | None:
+        r"""
+        Download content of CDF file from LASP SDC into temporary file
 
-        # `local_file_name` is set here if `file` downloads successfully
+        Parameter
+        ---------
+        cdf_file_name: str
+            Name of CDF file
+
+        Returns
+        -------
+        temp_file_name: str | None
+            Name of temporary file (None if download failed)
+        """
         with NamedTemporaryFile(delete=False, mode="wb") as temp_file:
-            temp_file_name = temp_file.name
             for _ in range(3):
                 try:
                     response = requests.get(
-                        url=f"{self.server}/download/{self.query_type}",
-                        params=self.get_payload(file_name=file_name),
+                        url=f"{self._api_link}/download/{self.query_type}",
+                        params=self.get_payload(cdf_file_name=cdf_file_name),
                         timeout=60.0,
                     )
-                    file_size = int(response.headers.get("content-length"))
+                    cdf_file_size = int(response.headers.get("content-length"))
                     temp_file.write(response.content)
-                    download_size = os.path.getsize(temp_file_name)
-                    if file_size == download_size:
-                        local_file_name = temp_file_name
-                        break
+                    download_size = os.path.getsize(temp_file.name)
+                    if cdf_file_size == download_size:
+                        return temp_file.name
                 except (
                     requests.ConnectionError,
                     requests.HTTPError,
@@ -157,54 +176,57 @@ class BaseSync(ABC):
                 ):
                     pass
             else:
-                logging.warning(f"Giving up downloading {file_name}!")
+                logging.warning(f"Giving up downloading {cdf_file_name}!")
+                os.unlink(temp_file.name)
+                return None
 
-        if local_file_name is None:
-            os.unlink(temp_file_name)
-        return local_file_name
-
-    def is_updated(self, file_metadata: dict) -> bool:
-        """Called before download to determine if dataset is updated"""
+    def dataset_is_updated(self, file_metadata: dict) -> bool:
+        r"""
+        Called before downloading to determine if local dataset is updated
+        """
         try:
             ds = zarr.open(self.store)
             group = file_metadata["group"]
             local_version = ds[group].attrs["Data_version"].replace("v", "")
             remote_version = file_metadata["version"].replace("v", "")
-            updated = local_version == remote_version
+            return local_version == remote_version
         except KeyError:
-            updated = False
-        return updated
+            return False
 
     @abstractmethod
-    def get_file_metadata(self, file_name: str) -> dict:
+    def get_file_metadata(self, cdf_file_name: str) -> dict:
         raise NotImplementedError()
 
     @abstractmethod
-    def process_file(self, file_name: str, file_metadata: dict):
-        """Called after download to process data"""
+    def process_file(self, temp_file_name: str, file_metadata: dict):
+        r"""
+        Called after downloading to process and save data to local storage
+        """
         raise NotImplementedError()
 
-    def download(self, parallel: int = 1, dry_run: bool = False):
-        def _helper(file_name: str):
-            file_metadata = self.get_file_metadata(file_name)
-            if not self.update and self.is_updated(file_metadata):
-                logging.info(f"{file_name} is up-to-date")
+    def sync(self, parallel: int = 1, dry_run: bool = False):
+        def _helper(cdf_file_name: str):
+            file_metadata = self.get_file_metadata(cdf_file_name)
+            if not self.update_local and self.dataset_is_updated(
+                file_metadata
+            ):
+                logging.info(f"Data from {cdf_file_name} is up-to-date")
                 return
 
-            temp_file = self.download_file(file_name)
-            if temp_file is not None:
-                self.process_file(temp_file, file_metadata)
-                os.unlink(temp_file)
-                logging.info(f"Processed {file_name}")
+            temp_file_name = self.download_file(cdf_file_name)
+            if temp_file_name is not None:
+                self.process_file(temp_file_name, file_metadata)
+                os.unlink(temp_file_name)
+                logging.info(f"Processed {cdf_file_name}")
 
-        file_list = self.get_file_list()
+        cdf_file_list = self.get_cdf_file_list()
         if dry_run:
             return
 
         with ThreadPool(nodes=parallel) as pool:
-            with tqdm(total=len(file_list), dynamic_ncols=True) as pbar:
-                for _ in pool.uimap(_helper, file_list):
-                    pbar.update()
+            with tqdm(total=len(cdf_file_list), dynamic_ncols=True) as bar:
+                for _ in pool.uimap(_helper, cdf_file_list):
+                    bar.update()
 
     @property
     def start_date(self) -> str:

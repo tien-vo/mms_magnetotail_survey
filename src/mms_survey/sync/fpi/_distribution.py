@@ -1,20 +1,16 @@
 import logging
-import os
+from os.path import splitext
 
-import zarr
 import numpy as np
-from numcodecs.abc import Codec
 from cdflib.xarray import cdf_to_xarray
 
-from mms_survey.utils.io import default_store, default_compressor
-
-from ..base import BaseSync
-from ..utils import process_epoch_metadata, clean_metadata
+from ..base import BaseSynchronizer
+from ..utils import clean_metadata, process_epoch_metadata
 
 _legible_dtype = ["ion", "elc"]
 
 
-class SyncFastPlasmaInvestigationDistribution(BaseSync):
+class SyncFastPlasmaInvestigationDistribution(BaseSynchronizer):
     def __init__(
         self,
         start_date: str = "2017-07-26",
@@ -24,9 +20,7 @@ class SyncFastPlasmaInvestigationDistribution(BaseSync):
         data_type: str = "ion",
         data_level: str = "l2",
         center_timestamps: bool = True,
-        update: bool = False,
-        store: zarr._storage.store.Store = default_store,
-        compressor: Codec = default_compressor,
+        **kwargs,
     ):
         super().__init__(
             instrument="fpi",
@@ -36,17 +30,14 @@ class SyncFastPlasmaInvestigationDistribution(BaseSync):
             data_rate="fast" if data_rate == "srvy" else data_rate,
             data_type=data_type,
             data_level=data_level,
-            product=None,
             query_type="science",
-            update=update,
-            store=store,
-            compressor=compressor,
+            **kwargs,
         )
         self.center_timestamps = center_timestamps
-        self.compression_factor = 1.0
+        self._compression_factor = 1.0
 
     @property
-    def data_type(self) -> None | str:
+    def data_type(self) -> str | None:
         if self._data_type is None:
             return None
         else:
@@ -56,7 +47,7 @@ class SyncFastPlasmaInvestigationDistribution(BaseSync):
             return _data_type
 
     @data_type.setter
-    def data_type(self, data_type: None | str | list):
+    def data_type(self, data_type: str | list[str] | None):
         assert data_type is None or isinstance(
             data_type, (str, list)
         ), "Incorrect type for data type input"
@@ -68,39 +59,43 @@ class SyncFastPlasmaInvestigationDistribution(BaseSync):
 
         self._data_type = data_type
 
-    def get_file_metadata(self, file_name: str) -> dict:
+    def get_file_metadata(self, cdf_file_name: str) -> dict:
         (
             probe,
             instrument,
             data_rate,
             data_level,
             data_type,
-            time,
+            time_string,
             version,
-        ) = os.path.splitext(file_name)[0].split("_")
-        data_type = data_type[:3]
-        species = "ion" if data_type == "dis" else "elc"
+        ) = splitext(cdf_file_name)[0].split("_")
+        assert instrument == "fpi", "Incorrect input for FPI synchronizer!"
+        assert (
+            data_type[4:] == "dist"
+        ), "Incorrect data type for FPI distribution synchronizer!"
+        species = "ion" if (data_type := data_type[:3]) == "dis" else "elc"
         return {
-            "file_name": file_name,
             "probe": probe,
             "instrument": instrument,
             "data_rate": data_rate,
-            "data_type": data_type[:3],
+            "data_type": data_type,
             "data_level": data_level,
             "version": version,
             "species": species,
             "group": (
                 f"/{probe}/{instrument}_{species}_distribution/"
-                f"{data_rate}/{data_level}/{time}"
+                f"{data_rate}/{data_level}/{time_string}"
             ),
         }
 
-    def process_file(self, file_name: str, file_metadata: dict):
+    def process_file(self, temp_file_name: str, file_metadata: dict):
         pfx = "{probe}_{data_type}".format(**file_metadata)
         sfx = "{data_rate}".format(**file_metadata)
 
         # Load file and fix epoch metadata
-        ds = cdf_to_xarray(file_name, to_datetime=True, fillval_to_nan=True)
+        ds = cdf_to_xarray(
+            temp_file_name, to_datetime=True, fillval_to_nan=True
+        )
         ds = process_epoch_metadata(ds, epoch_vars=["Epoch"])
         if self.center_timestamps:
             dt = np.int64(
@@ -111,31 +106,33 @@ class SyncFastPlasmaInvestigationDistribution(BaseSync):
             ds.Epoch.attrs.update({**attrs, "CATDESC": "Centered timestamps"})
 
         # Rename dimensions
-        ds = ds.rename(Epoch="time")
-        ds = ds.swap_dims({
-            f"{pfx}_energy_{sfx}_dim": "energy",
-            f"{pfx}_theta_{sfx}": "zenith",
-        })
+        ds = ds.swap_dims(
+            {
+                f"{pfx}_energy_{sfx}_dim": "energy_channel",
+                f"{pfx}_theta_{sfx}": "zenith_sector",
+            }
+        )
         if file_metadata["data_rate"] == "brst":
-            ds = ds.swap_dims({f"{pfx}_phi_{sfx}_dim": "azimuth"})
+            ds = ds.swap_dims({f"{pfx}_phi_{sfx}_dim": "azimuthal_sector"})
         else:
-            ds = ds.swap_dims({f"{pfx}_phi_{sfx}": "azimuth"})
+            ds = ds.swap_dims({f"{pfx}_phi_{sfx}": "azimuthal_sector"})
         ds = ds.assign_coords(
-            energy=("energy", np.arange(32, dtype="i1")),
-            zenith=("zenith", np.arange(16, dtype="i1")),
-            azimuth=("azimuth", np.arange(32, dtype="i1")),
+            energy_channel=("energy_channel", np.arange(32, dtype="i1")),
+            zenith_sector=("zenith_sector", np.arange(16, dtype="i1")),
+            azimuthal_sector=("azimuthal_sector", np.arange(32, dtype="i1")),
         ).reset_coords()
 
         # Rename and remove unwanted variables
         ds = ds.rename(
             vars := {
+                "Epoch": "time",
                 f"{pfx}_energy_{sfx}": "W",
                 f"{pfx}_theta_{sfx}": "theta",
                 f"{pfx}_phi_{sfx}": "phi",
                 f"{pfx}_dist_{sfx}": "f3d",
                 f"{pfx}_disterr_{sfx}": "f3d_err",
             }
-        )
+        ).set_coords(["W", "theta", "phi"])
         ds = clean_metadata(ds[list(vars.values())])
 
         # Force monotonic
@@ -144,12 +141,14 @@ class SyncFastPlasmaInvestigationDistribution(BaseSync):
         # Save
         ds.attrs["start_date"] = str(ds.time.values[0])
         ds.attrs["end_date"] = str(ds.time.values[-1])
-        ds = ds.chunk(chunks={
-            "time": 1000,
-            "energy": 1,
-            "zenith": 16,
-            "azimuth": 32,
-        })
+        ds = ds.chunk(
+            chunks={
+                "time": 1000,
+                "energy_channel": 1,
+                "zenith_sector": 16,
+                "azimuthal_sector": 32,
+            }
+        )
         encoding = {x: {"compressor": self.compressor} for x in ds}
         ds.to_zarr(
             mode="w",
@@ -158,4 +157,3 @@ class SyncFastPlasmaInvestigationDistribution(BaseSync):
             encoding=encoding,
             consolidated=False,
         )
-        print(ds)

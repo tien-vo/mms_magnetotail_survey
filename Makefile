@@ -24,8 +24,8 @@ install: pyproject.toml $(POETRY_LOCK) $(CONDA_LOCK)
 
 .PHONY: format
 format:
-	poetry run isort src/
-	poetry run black src/
+	micromamba run -n ${NAME} poetry run isort src/
+	micromamba run -n ${NAME} poetry run black src/
 
 .PHONY: clean
 clean:

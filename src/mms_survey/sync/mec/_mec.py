@@ -1,17 +1,13 @@
 import logging
-import os
+from os.path import splitext
 
-import zarr
-from numcodecs.abc import Codec
 from cdflib.xarray import cdf_to_xarray
 
-from mms_survey.utils.io import default_store, default_compressor
-
-from ..base import BaseSync
-from ..utils import process_epoch_metadata, clean_metadata
+from ..base import BaseSynchronizer
+from ..utils import clean_metadata, process_epoch_metadata
 
 
-class SyncMagneticEphemerisCoordinates(BaseSync):
+class SyncMagneticEphemerisCoordinates(BaseSynchronizer):
     def __init__(
         self,
         start_date: str = "2017-07-26",
@@ -20,9 +16,7 @@ class SyncMagneticEphemerisCoordinates(BaseSync):
         data_rate: str = "srvy",
         data_type: str = "epht89q",
         data_level: str = "l2",
-        update: bool = False,
-        store: zarr._storage.store.Store = default_store,
-        compressor: Codec = default_compressor,
+        **kwargs,
     ):
         super().__init__(
             instrument="mec",
@@ -32,26 +26,23 @@ class SyncMagneticEphemerisCoordinates(BaseSync):
             data_rate=data_rate,
             data_type=data_type,
             data_level=data_level,
-            product=None,
             query_type="science",
-            update=update,
-            store=store,
-            compressor=compressor,
+            **kwargs,
         )
-        self.compression_factor = 0.147
+        self._compression_factor = 0.147
 
-    def get_file_metadata(self, file_name: str) -> dict:
+    def get_file_metadata(self, cdf_file_name: str) -> dict:
         (
             probe,
             instrument,
             data_rate,
             data_level,
             data_type,
-            time,
+            time_string,
             version,
-        ) = os.path.splitext(file_name)[0].split("_")
+        ) = splitext(cdf_file_name)[0].split("_")
+        assert instrument == "mec", "Incorrect input for MEC synchronizer!"
         return {
-            "file_name": file_name,
             "probe": probe,
             "instrument": instrument,
             "data_rate": data_rate,
@@ -60,26 +51,28 @@ class SyncMagneticEphemerisCoordinates(BaseSync):
             "version": version,
             "group": (
                 f"/{probe}/{instrument}/{data_rate}/{data_level}/"
-                f"{data_type}/{time}"
+                f"{data_type}/{time_string}"
             ),
         }
 
-    def process_file(self, file_name: str, file_metadata: str):
+    def process_file(self, temp_file_name: str, file_metadata: str):
         pfx = "{probe}_{instrument}".format(**file_metadata)
 
         # Load file and fix metadata
-        ds = cdf_to_xarray(file_name, to_datetime=True, fillval_to_nan=True)
+        ds = cdf_to_xarray(
+            temp_file_name, to_datetime=True, fillval_to_nan=True
+        )
         ds = process_epoch_metadata(ds, epoch_vars=["Epoch"])
         ds = ds.reset_coords()
-        ds = ds.rename_dims(dict(dim0="quaternion", dim2="space"))
+        ds = ds.rename_dims(dict(dim0="quaternion", dim2="rank_1_space"))
         ds = ds.assign_coords(
             {
-                "space": ["x", "y", "z"],
+                "rank_1_space": ["x", "y", "z"],
                 "quaternion": ["x", "y", "z", "w"],
             }
         )
 
-        # CDF metadata is incorrect here, so we fix it
+        # CDF metadata for version is incorrect here, so we fix it
         ds.attrs["Data_version"] = file_metadata["version"]
 
         # Rename variables and remove unwanted variables

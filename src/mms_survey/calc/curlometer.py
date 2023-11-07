@@ -31,14 +31,14 @@ def curlometer(
     # Interpolate everything to Q1 time
     components = ["x", "y", "z"]
     kw = dict(time=Q1.time, kwargs=dict(fill_value=np.nan))
-    Q1 = Q1.sel(space=components)
-    Q2 = Q2.interp(**kw).sel(space=components)
-    Q3 = Q3.interp(**kw).sel(space=components)
-    Q4 = Q4.interp(**kw).sel(space=components)
-    R1 = R1.interp(**kw).sel(space=components)
-    R2 = R2.interp(**kw).sel(space=components)
-    R3 = R3.interp(**kw).sel(space=components)
-    R4 = R4.interp(**kw).sel(space=components)
+    Q1 = Q1.sel(rank_1_space=components)
+    Q2 = Q2.interp(**kw).sel(rank_1_space=components)
+    Q3 = Q3.interp(**kw).sel(rank_1_space=components)
+    Q4 = Q4.interp(**kw).sel(rank_1_space=components)
+    R1 = R1.interp(**kw).sel(rank_1_space=components)
+    R2 = R2.interp(**kw).sel(rank_1_space=components)
+    R3 = R3.interp(**kw).sel(rank_1_space=components)
+    R4 = R4.interp(**kw).sel(rank_1_space=components)
 
     # Calculate
     Q_bc = 0.25 * (Q1 + Q2 + Q3 + Q4).values
@@ -57,10 +57,10 @@ def curlometer(
     attrs = dict(units=str(u.Unit(Q_unit) / u.Unit(R_unit)))
     return xr.Dataset(
         data_vars={
-            "R_bc": (["time", "space"], R_bc, {"units": R_unit}),
-            f"{Q_name}_bc": (["time", "space"], Q_bc, {"units": Q_unit}),
-            f"curl_{Q_name}": (["time", "space"], clm["curl_Q"], attrs),
+            "R_bc": (["time", "rank_1_space"], R_bc, {"units": R_unit}),
+            f"{Q_name}_bc": (["time", "rank_1_space"], Q_bc, {"units": Q_unit}),
+            f"curl_{Q_name}": (["time", "rank_1_space"], clm["curl_Q"], attrs),
             f"div_{Q_name}": (["time"], clm["div_Q"], attrs),
         },
-        coords={"time": Q1.time.values, "space": ["x", "y", "z"]},
+        coords={"time": Q1.time.values, "rank_1_space": ["x", "y", "z"]},
     )
