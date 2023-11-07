@@ -186,12 +186,14 @@ class SyncFastPlasmaInvestigationMoments(BaseSynchronizer):
         # Save
         ds.attrs["start_date"] = str(ds.time.values[0])
         ds.attrs["end_date"] = str(ds.time.values[-1])
-        ds = ds.chunk(chunks={
-            "time": 1000,
-            "rank_1_space": 3,
-            "rank_2_space": 6,
-            "energy_channel": 32,
-        })
+        ds = ds.chunk(
+            chunks={
+                "time": 1000,
+                "rank_1_space": 3,
+                "rank_2_space": 6,
+                "energy_channel": 32,
+            }
+        )
         encoding = {x: {"compressor": self.compressor} for x in ds}
         ds.to_zarr(
             mode="w",

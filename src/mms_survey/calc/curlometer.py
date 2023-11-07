@@ -58,7 +58,11 @@ def curlometer(
     return xr.Dataset(
         data_vars={
             "R_bc": (["time", "rank_1_space"], R_bc, {"units": R_unit}),
-            f"{Q_name}_bc": (["time", "rank_1_space"], Q_bc, {"units": Q_unit}),
+            f"{Q_name}_bc": (
+                ["time", "rank_1_space"],
+                Q_bc,
+                {"units": Q_unit},
+            ),
             f"curl_{Q_name}": (["time", "rank_1_space"], clm["curl_Q"], attrs),
             f"div_{Q_name}": (["time"], clm["div_Q"], attrs),
         },
